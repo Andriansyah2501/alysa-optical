@@ -1,0 +1,24 @@
+{
+  "name": "Alysa Optical - Eyewear Studio",
+  "short_name": "Alysa Optical",
+  "description": "Toko Kacamata & Lensa Optik Modern Batam",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FDFBF7",
+  "theme_color": "#BE6F54",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ]
+}
