@@ -101,7 +101,7 @@ tests/                                  # PHPUnit (kerangka)
 | `optician` | Dashboard optik, status produksi pesanan |
 | `cashier` | POS/kasir + struk |
 
-Dikelola dari **Admin → Pengaturan → User**. Akun nonaktif otomatis ditolak login.
+Modul **transaksi kasir (POS)** dapat dibuka-tutup per role dari **Admin → Pengaturan → Kontrol Akses Transaksi Kasir** (admin & super_admin selalu bisa). User publik/tanpa login tidak pernah punya akses POS — mereka hanya dapat melihat struk digital ordernya via `/pos/struk/{kode}`. Akun pengguna & role dikelola dari **Admin → Pengaturan → User**. Akun nonaktif otomatis ditolak login.
 
 ## 🚀 Instalasi (Development)
 
