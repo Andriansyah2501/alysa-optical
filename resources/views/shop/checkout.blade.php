@@ -9,7 +9,7 @@
         <div class="text-center max-w-xl mx-auto mb-10">
             <span class="text-xs font-bold text-brand-600 uppercase tracking-widest">Langkah Terakhir</span>
             <h1 class="font-serif text-3xl font-bold text-slate-900 mt-1">Konfirmasi Pesanan & Resep Kacamata</h1>
-            <p class="text-xs text-slate-500 mt-1">Pilih paket lensa promo 11.11, pasang voucher potongan harga, dan isi ukuran mata Anda.</p>
+            <p class="text-xs text-slate-500 mt-1">Pilih paket lensa promo, pasang voucher potongan harga, dan isi ukuran mata Anda.</p>
         </div>
 
         <form action="{{ route('shop.order.store') }}" method="POST" id="checkoutForm">
@@ -65,14 +65,14 @@
                         </div>
                     </div>
 
-                    <!-- 2. Form Resep Optik Kacamata (Sesuai 11.11 Special Price) -->
+                    <!-- 2. Form Resep Optik Kacamata (Harga Promo Berlaku) -->
                     <div class="bg-white p-6 sm:p-8 rounded-3xl border border-sand-200 shadow-sm space-y-5">
                         <div class="flex items-center justify-between pb-3 border-b border-sand-200">
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-xl bg-brand-100 text-brand-700 flex items-center justify-center font-bold text-sm">2</div>
                                 <div>
                                     <h3 class="font-bold text-slate-900 text-base">Pilihan Lensa & Resep Mata</h3>
-                                    <span class="text-[10px] text-brand-600 font-extrabold uppercase">✨ 11.11 Special Price Applied</span>
+                                    <span class="text-[10px] text-brand-600 font-extrabold uppercase">✨ Harga Promo Berlaku</span>
                                 </div>
                             </div>
                             <span class="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg">Harga Promo Spesial</span>
@@ -254,7 +254,7 @@
                                 <span class="font-bold text-slate-800" id="summaryFramePrice">Rp {{ number_format($product->effective_price, 0, ',', '.') }}</span>
                             </div>
                             <div class="flex justify-between">
-                                <span>Paket Lensa (11.11 Promo):</span>
+                                <span>Paket Lensa (Promo):</span>
                                 <span class="font-bold text-brand-700" id="summaryLensPrice">+ Rp 0</span>
                             </div>
                             <div class="flex justify-between text-emerald-700 font-bold" id="rowVoucherDiscount" style="display: none;">

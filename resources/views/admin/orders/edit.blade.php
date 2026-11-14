@@ -122,7 +122,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
                     <label class="font-bold text-slate-700 block mb-1">Nama Paket Lensa</label>
-                    <input type="text" name="lens_type_name" value="{{ old('lens_type_name', $order->lens_type_name) }}" placeholder="Contoh: Bluecromic 11.11" class="w-full px-3.5 py-2.5 bg-sand-50 border border-sand-300 rounded-xl font-medium text-slate-900">
+                    <input type="text" name="lens_type_name" value="{{ old('lens_type_name', $order->lens_type_name) }}" placeholder="Contoh: Bluecromic" class="w-full px-3.5 py-2.5 bg-sand-50 border border-sand-300 rounded-xl font-medium text-slate-900">
                 </div>
                 <div>
                     <label class="font-bold text-slate-700 block mb-1">Biaya Lensa (Rp)</label>

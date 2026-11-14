@@ -254,7 +254,7 @@
             </div>
         </div>
 
-        <!-- Paket Lensa Paling Populer (11.11 Promo & Digital) -->
+        <!-- Paket Lensa Paling Populer (Promo & Digital) -->
         <div class="p-6 bg-white rounded-3xl border border-sand-200 shadow-sm space-y-4">
             <div class="flex items-center justify-between pb-2 border-b border-sand-100">
                 <div>

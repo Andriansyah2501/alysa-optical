@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Koleksi Kacamata Alysa Glasses & Promo 11.11 Lensa Optik | Alysa Glasses')
+@section('title', 'Koleksi Kacamata Alysa Glasses & Promo Lensa Optik | Alysa Glasses')
 @section('meta_description', 'Jelajahi koleksi frame Alysa Glasses Batam: kacamata optik, sunglasses polarized, titanium ringan. Lengkap dengan paket lensa blueray, photocromic, progresif & anti fog. Pesan online, lacak pesanan.')
 
 @section('content')
@@ -12,7 +12,7 @@
                 
                 <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
                     <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-100 text-amber-900 text-xs font-extrabold tracking-wide border border-amber-200 shadow-sm">
-                        <i class="fa-solid fa-fire text-amber-600"></i> ALYSA GLASSES – 11.11 SPECIAL PRICE
+                        <i class="fa-solid fa-fire text-amber-600"></i> ALYSA GLASSES – PAKET LENSA PROMO
                     </div>
                     <h1 class="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 leading-[1.15]">
                         Eyewear That Completes <br>
@@ -20,7 +20,7 @@
                     </h1>
                     <p class="text-slate-600 text-sm sm:text-base max-w-xl leading-relaxed mx-auto lg:mx-0">
                         📍 <strong>Batam • Tanjung Pinang • Bintan</strong> | ✨ <strong>Premium Quality • Affordable Price</strong>.<br>
-                        Temukan koleksi frame favorit (Cat Eye, Bulat, Segi) lengkap dengan paket lensa 11.11: Blueray, Photocromic, Bluecromic, Progresif, dan Anti Fog.
+                        Temukan koleksi frame favorit (Cat Eye, Bulat, Segi) lengkap dengan paket lensa promo: Blueray, Photocromic, Bluecromic, Progresif, dan Anti Fog.
                     </p>
                     <div class="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2">
                         <a href="{{ route('shop.customer.portal') }}" class="px-4 py-2 bg-brand-600 text-xs hover:bg-brand-700 text-white rounded-2xl text-sm font-bold shadow-lg shadow-brand-500/25 transition-all hover:scale-105 flex items-center gap-2">
@@ -30,7 +30,7 @@
                             Lihat Semua Frame <i class="fa-solid fa-arrow-right ml-2 text-xs"></i>
                         </a>
                         <a href="#promo-lensa" class="px-4 py-2 bg-white text-xs hover:bg-sand-50 text-slate-800 rounded-2xl text-sm font-bold border border-sand-300 shadow-sm transition-all">
-                            Tabel Harga Lensa 11.11 <i class="fa-solid fa-tags ml-1 text-brand-600"></i>
+                            Tabel Harga Lensa Promo <i class="fa-solid fa-tags ml-1 text-brand-600"></i>
                         </a>
                     </div>
                     
@@ -42,7 +42,7 @@
                         </div>
                         <div>
                             <span class="block text-xl font-bold text-slate-900">6 Paket</span>
-                            <span class="text-[11px] text-slate-500 font-medium">Lensa 11.11</span>
+                            <span class="text-[11px] text-slate-500 font-medium">Lensa Promo</span>
                         </div>
                         <div>
                             <span class="block text-xl font-bold text-slate-900">3 Voucher</span>
@@ -70,7 +70,7 @@
                             <img src="https://images.unsplash.com/photo-1591076482161-42ce6da69f67?auto=format&fit=crop&w=800&q=80" alt="Alysa Glasses Showcase" class="w-full h-96 object-cover object-center transform hover:scale-105 transition-transform duration-500">
                             <div class="p-4 bg-white flex items-center justify-between">
                                 <div>
-                                    <span class="text-xs font-semibold text-brand-600 uppercase tracking-wider">Koleksi Terlaris 11.11</span>
+                                    <span class="text-xs font-semibold text-brand-600 uppercase tracking-wider">Koleksi Terlaris</span>
                                     <h4 class="text-sm font-bold text-slate-900">Alysa Shibuya Rose Gold</h4>
                                 </div>
                                 <span class="text-sm font-extrabold text-slate-900">Rp 379.000</span>
@@ -94,7 +94,7 @@
         </div>
     </section>
 
-    <!-- 2. TABEL HARGA ALYSA GLASSES – 11.11 SPECIAL PRICE (RESMI) -->
+    <!-- 2. TABEL HARGA ALYSA GLASSES – PAKET LENSA PROMO (RESMI) -->
     <section id="promo-lensa" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-20">
         <div class="bg-white rounded-3xl border border-sand-300 shadow-xl p-6 sm:p-8 space-y-6">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-sand-200">
@@ -103,19 +103,19 @@
                         <i class="fa-solid fa-circle-check text-emerald-600"></i> Rekomendasi Harga Promo
                     </div>
                     <h2 class="font-serif text-2xl sm:text-3xl font-bold text-slate-900 mt-2">
-                        👓 ALYSA GLASSES – 11.11 SPECIAL PRICE
+                        👓 ALYSA GLASSES – PAKET LENSA PROMO
                     </h2>
-                    <p class="text-xs text-slate-500 mt-1">Daftar harga promo paket lensa optik resmi berlaku selama periode promo 11.11.</p>
+                    <p class="text-xs text-slate-500 mt-1">Daftar harga promo paket lensa optik resmi berlaku selama periode promo berlangsung.</p>
                 </div>
 
                 <div class="flex items-center gap-2">
                     <span class="text-xs font-bold text-brand-600 bg-brand-50 px-3.5 py-2 rounded-xl border border-brand-200">
-                        <i class="fa-solid fa-clock mr-1"></i> Promo Terbatas 11.11
+                        <i class="fa-solid fa-clock mr-1"></i> Promo Terbatas
                     </span>
                 </div>
             </div>
 
-            <!-- Grid 6 Paket Promo 11.11 -->
+            <!-- Grid 6 Paket Promo -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 
                 <!-- 1. CRMC Minus -->
@@ -321,7 +321,7 @@
                                 @endif
                             </div>
 
-                            <a href="{{ route('shop.show', $prod->slug) }}" class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-brand-50 hover:bg-brand-600 text-brand-700 hover:text-white transition-all shadow-sm" title="Lihat Detail & Pasang Lensa 11.11">
+                            <a href="{{ route('shop.show', $prod->slug) }}" class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-brand-50 hover:bg-brand-600 text-brand-700 hover:text-white transition-all shadow-sm" title="Lihat Detail & Pasang Lensa Promo">
                                 <i class="fa-solid fa-arrow-right text-xs"></i>
                             </a>
                         </div>

@@ -345,7 +345,7 @@
     <!-- Footer Warm Light -->
     
     @guest
-    <!-- Saluran WhatsApp Promo 11.11 Banner -->
+    <!-- Saluran WhatsApp Banner -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 mb-8 relative z-20">
         <div class="bg-gradient-to-r from-emerald-800 via-teal-800 to-emerald-900 rounded-3xl p-6 sm:p-8 text-white shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6 border border-emerald-700/50">
             <div class="space-y-2 text-center md:text-left">
@@ -354,7 +354,7 @@
                 </div>
                 <h3 class="font-serif text-xl sm:text-2xl font-bold tracking-tight">{{ $globalSettings['footer_channel_headline'] ?? 'Wishlist Frame-mu, Saatnya Jadi Kenyataan! 🔥' }}</h3>
                 <p class="text-xs sm:text-sm text-emerald-100 max-w-xl">
-                    {{ $globalSettings['footer_channel_subtext'] ?? 'Follow dan Join Saluran WhatsApp Alysa Glasses untuk info promo 11.11 spesial, restock frame viral, dan voucher eksklusif.' }}
+                    {{ $globalSettings['footer_channel_subtext'] ?? 'Follow dan Join Saluran WhatsApp Alysa Glasses untuk info promo spesial, restock frame viral, dan voucher eksklusif.' }}
                 </p>
             </div>
             <a href="{{ $globalSettings['whatsapp_channel_url'] ?? 'https://whatsapp.com/channel/0029VbDeAYNInlqON8uS8h0F' }}" target="_blank" class="shrink-0 px-6 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs sm:text-sm rounded-2xl shadow-lg shadow-emerald-900/40 transition-all flex items-center gap-2">

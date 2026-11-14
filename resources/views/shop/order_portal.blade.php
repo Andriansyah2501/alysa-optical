@@ -77,7 +77,7 @@
                         <span class="w-7 h-7 bg-brand-100 text-brand-700 rounded-xl flex items-center justify-center text-xs font-black">2</span>
                         Pilih Frame Favorit Anda
                     </h3>
-                    <span class="text-xs text-brand-600 font-bold">Koleksi Alysa 11.11</span>
+                    <span class="text-xs text-brand-600 font-bold">Koleksi Alysa</span>
                 </div>
 
                 <!-- Pilihan Frame dari Katalog -->
@@ -119,7 +119,7 @@
                         <span class="w-7 h-7 bg-brand-100 text-brand-700 rounded-xl flex items-center justify-center text-xs font-black">3</span>
                         Pilih Paket Lensa Resep & Optik
                     </h3>
-                    <span class="text-xs text-amber-600 font-black"><i class="fa-solid fa-fire mr-1"></i> Special Price 11.11</span>
+                    <span class="text-xs text-amber-600 font-black"><i class="fa-solid fa-fire mr-1"></i> Harga Promo Spesial</span>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">

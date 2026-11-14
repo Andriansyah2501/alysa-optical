@@ -13,7 +13,6 @@
                     <i class="fa-solid fa-cash-register mr-1"></i> POS Kasir Online
                 </span>
                 <span class="text-xs text-slate-400">• {{ Auth::user()->name }} ({{ strtoupper(Auth::user()->role) }})</span>
-                <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold">11.11 Promo Active</span>
             </div>
             <h1 class="font-serif text-3xl font-bold text-slate-900 mt-1">Sistem Kasir Toko Kacamata</h1>
             <p class="text-xs text-slate-500 mt-0.5">Penjualan kacamata etalase, custom frame & harga, ganti kaca saja, dan upah jasa servis.</p>

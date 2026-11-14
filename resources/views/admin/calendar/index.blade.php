@@ -47,11 +47,11 @@
             @csrf
             <div class="sm:col-span-2">
                 <label class="font-bold text-slate-700 block mb-1">Judul Event Promo *</label>
-                <input type="text" name="title" required placeholder="Contoh: Flash Sale 11.11 Lensa Bluechromic" class="w-full px-3.5 py-2.5 bg-sand-50 border border-sand-300 rounded-xl font-bold text-slate-900">
+                <input type="text" name="title" required placeholder="Contoh: Flash Sale Lensa Bluechromic" class="w-full px-3.5 py-2.5 bg-sand-50 border border-sand-300 rounded-xl font-bold text-slate-900">
             </div>
             <div>
                 <label class="font-bold text-slate-700 block mb-1">Badge Tag Singkat *</label>
-                <input type="text" name="badge" required placeholder="SPECIAL 11.11" class="w-full px-3.5 py-2.5 bg-sand-50 border border-sand-300 rounded-xl font-black uppercase text-slate-900">
+                <input type="text" name="badge" required placeholder="SPESIAL PROMO" class="w-full px-3.5 py-2.5 bg-sand-50 border border-sand-300 rounded-xl font-black uppercase text-slate-900">
             </div>
             <div>
                 <label class="font-bold text-slate-700 block mb-1">Tema Warna Badge</label>
