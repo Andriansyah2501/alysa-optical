@@ -433,4 +433,38 @@ class PosController extends Controller
         return $pdf->stream($filename);
     }
 
+    /**
+     * Lookup frame via kode barcode tag (untuk scanner USB / kamera POS).
+     * Menerima kode persis AG-00014 maupun angka polos 14.
+     */
+    public function lookupFrame($code)
+    {
+        $code = strtoupper(trim((string) $code));
+        if ($code === '') {
+            return response()->json(['ok' => false, 'message' => 'Kode kosong'], 422);
+        }
+
+        $candidates = array_unique([$code, strtoupper(sprintf('AG-%05d', (int) $code))]);
+
+        $product = Product::whereIn('barcode', $candidates)
+            ->where('stock', '>', 0)
+            ->first();
+
+        if (!$product) {
+            return response()->json(['ok' => false, 'message' => "Barcode {$code} tidak terdaftar / stok habis"], 404);
+        }
+
+        return response()->json([
+            'ok' => true,
+            'id' => $product->id,
+            'name' => $product->name,
+            'barcode' => $product->barcode,
+            'price' => $product->effective_price,
+            'stock' => $product->stock,
+            'image' => $product->image_url,
+            'brand' => $product->brand,
+            'shape' => $product->frame_shape,
+        ]);
+    }
+
 }

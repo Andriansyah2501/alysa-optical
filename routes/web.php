@@ -37,6 +37,7 @@ Route::get('/kalender-promo', [PromoCalendarController::class, 'publicIndex'])->
 // Rute Kasir POS (Akses: Cashier & Admin)
 Route::middleware(['auth', 'pos.access'])->group(function () {
     Route::get('/pos', [PosController::class, 'index'])->name('pos.index');
+    Route::get('/pos/frame/{code}', [PosController::class, 'lookupFrame'])->name('pos.frame.lookup');
     Route::post('/pos/bayar', [PosController::class, 'store'])->name('pos.store');
     Route::post('/pos/pelunasan/{id}', [PosController::class, 'settlePayment'])->name('pos.settle');
 // Struk dipindahkan ke akses umum agar pelanggan bisa melihat struk digital dari link WA
@@ -64,6 +65,8 @@ Route::middleware(['auth', 'role:admin,optician'])->prefix('admin')->group(funct
         Route::post('/transaksi/batch-destroy', [GlassesShopController::class, 'adminOrderBatchDestroy'])->name('admin.order.batchDestroy');
 
     // Manajemen Katalog Kacamata Lengkap (CRUD)
+    Route::get('katalog/barcode-labels', [ProductCatalogController::class, 'barcodeLabels'])->name('admin.katalog.labels');
+    Route::post('katalog/generate-barcodes', [ProductCatalogController::class, 'generateBarcodes'])->name('admin.katalog.generate_barcodes');
     Route::resource('katalog', ProductCatalogController::class, [
         'as' => 'admin',
         'parameters' => ['katalog' => 'product']

@@ -17,6 +17,15 @@
         </div>
 
         <div class="flex items-center gap-3">
+            <form method="POST" action="{{ route('admin.katalog.generate_barcodes') }}">
+                @csrf
+                <button type="submit" class="px-4 py-2.5 bg-white border border-sand-300 hover:bg-sand-50 text-slate-700 rounded-xl text-xs font-bold transition-all flex items-center gap-2" title="Buat kode AG-xxxxx untuk produk yang belum punya barcode">
+                    <i class="fa-solid fa-barcode"></i> Generate Barcode
+                </button>
+            </form>
+            <a href="{{ route('admin.katalog.labels') }}" class="px-4 py-2.5 bg-slate-900 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-2">
+                <i class="fa-solid fa-tags"></i> Cetak Label
+            </a>
             <a href="{{ route('admin.katalog.create') }}" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold shadow-md shadow-brand-500/20 transition-all flex items-center gap-2">
                 <i class="fa-solid fa-plus"></i> Tambah Kacamata Baru
             </a>
@@ -56,6 +65,7 @@
                 <thead class="bg-sand-50/80 text-slate-500 uppercase tracking-wider font-bold text-[10px] border-b border-sand-200">
                     <tr>
                         <th class="px-6 py-4">Foto & Kacamata</th>
+                        <th class="px-6 py-4">Barcode</th>
                         <th class="px-6 py-4">Kategori & Spesifikasi</th>
                         <th class="px-6 py-4">Warna & Bahan</th>
                         <th class="px-6 py-4">Harga & Promo</th>
@@ -75,6 +85,14 @@
                                         <span class="text-[10px] text-slate-400 font-mono">{{ $prod->slug }}</span>
                                     </div>
                                 </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                @if($prod->barcode)
+                                    <span class="font-mono text-[11px] font-bold text-slate-700 block">{{ $prod->barcode }}</span>
+                                    <a href="{{ route('admin.katalog.labels', ['product' => $prod->id]) }}" target="_blank" class="text-[10px] font-bold text-brand-600 hover:underline"><i class="fa-solid fa-print mr-1"></i>Label</a>
+                                @else
+                                    <span class="text-[10px] text-slate-400">belum ada</span>
+                                @endif
                             </td>
                             <td class="px-6 py-4">
                                 <span class="font-bold text-slate-800 block">{{ $prod->category->name }}</span>
@@ -126,7 +144,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-8 text-center text-slate-400">
+                            <td colspan="7" class="px-6 py-8 text-center text-slate-400">
                                 Tidak ada produk kacamata ditemukan.
                             </td>
                         </tr>

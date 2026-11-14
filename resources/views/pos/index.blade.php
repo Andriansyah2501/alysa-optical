@@ -162,27 +162,41 @@
 
                     <!-- Panel Sub 1: Etalase Katalog -->
                     <div id="panelCatalog" class="space-y-3 pt-2">
-                        <div class="relative">
+                        <div>
                             <div class="flex gap-2">
                                 <div class="relative flex-1">
-                                    <input type="text" id="frameSearchInput" placeholder="Ketik nama kacamata atau scan barcode tag..." class="w-full pl-9 pr-4 py-2 bg-sand-50 border border-sand-300 rounded-xl text-xs font-medium text-slate-800">
+                                    <input type="text" id="frameSearchInput" placeholder="Ketik nama / scan barcode tag frame..." class="w-full pl-9 pr-4 py-2 bg-sand-50 border border-sand-300 rounded-xl text-xs font-medium text-slate-800">
                                     <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
                                 </div>
-                                <button type="button" onclick="document.getElementById('frameSearchInput').focus();" class="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0" title="Arahkan Barcode Scanner ke Sini">
+                                <button type="button" onclick="document.getElementById('frameSearchInput').focus();" class="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0" title="Scan dengan Barcode Scanner USB (arahkan & tembakkan)">
                                     <i class="fa-solid fa-barcode text-sm"></i> <span class="hidden sm:inline">Scan Tag</span>
                                 </button>
+                                <button type="button" id="frameCamScanBtn" onclick="openFrameCamScanner()" class="hidden px-3 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold items-center gap-1.5 shrink-0" title="Scan barcode tag pakai kamera HP">
+                                    <i class="fa-solid fa-camera text-sm"></i> <span class="hidden sm:inline">Kamera</span>
+                                </button>
                             </div>
-                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                            <!-- Pemindai kamera frame (menumpang mesin ZXing scanner lensa) -->
+                            <div id="frameCamWrap" class="hidden mt-2 rounded-xl border-2 border-brand-300 bg-slate-950 p-2">
+                                <div id="frameCamReader" class="mx-auto"></div>
+                                <div class="flex items-center justify-between mt-1.5">
+                                    <span class="text-[10px] text-slate-300 font-bold">Arahkan kamera ke barcode tag frame</span>
+                                    <button type="button" onclick="closeFrameCamScanner()" class="px-2.5 py-1 bg-white/10 hover:bg-white/20 text-white rounded-lg text-[10px] font-bold">✕ Tutup</button>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-64 overflow-y-auto pr-1" id="frameContainer">
                             @foreach($products as $index => $prod)
-                                <label class="frame-item p-3 rounded-2xl border border-sand-200 hover:border-brand-400 flex items-center gap-3 cursor-pointer transition-all hover:bg-sand-50 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50/70 has-[:checked]:ring-1 has-[:checked]:ring-brand-500">
-                                    <input type="radio" name="product_id" value="{{ $prod->id }}" data-name="{{ $prod->name }}" data-price="{{ $prod->effective_price }}" {{ $index === 0 ? 'checked' : '' }} class="text-brand-600 focus:ring-brand-500 shrink-0">
+                                <label class="frame-item p-3 rounded-2xl border border-sand-200 hover:border-brand-400 flex items-center gap-3 cursor-pointer transition-all hover:bg-sand-50 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50/70 has-[:checked]:ring-1 has-[:checked]:ring-brand-500"
+                                    data-search="{{ strtolower(trim(($prod->barcode ?? '') . ' ' . $prod->name . ' ' . $prod->brand . ' ' . $prod->frame_shape)) }}">
+                                    <input type="radio" name="product_id" value="{{ $prod->id }}" data-name="{{ $prod->name }}" data-barcode="{{ $prod->barcode }}" data-price="{{ $prod->effective_price }}" {{ $index === 0 ? 'checked' : '' }} class="text-brand-600 focus:ring-brand-500 shrink-0">
                                     <img src="{{ $prod->image_url }}" alt="{{ $prod->name }}" class="w-12 h-12 rounded-xl object-cover bg-white border border-sand-200 shrink-0">
                                     <div class="flex-1 min-w-0">
                                         <h4 class="font-bold text-xs text-slate-900 truncate">{{ $prod->name }}</h4>
                                         <span class="text-[10px] text-slate-500 block">{{ $prod->frame_shape }} • {{ $prod->color_primary }}</span>
+                                        @if($prod->barcode)
+                                            <span class="text-[9px] font-mono font-bold text-slate-400 block"><i class="fa-solid fa-barcode mr-0.5"></i>{{ $prod->barcode }}</span>
+                                        @endif
                                         <span class="text-xs font-extrabold text-brand-700 block mt-0.5">Rp {{ number_format($prod->effective_price, 0, ',', '.') }}</span>
                                     </div>
                                 </label>
@@ -929,9 +943,9 @@
 
     const frameSearchInput = document.getElementById('frameSearchInput');
     frameSearchInput.addEventListener('input', function() {
-        const filter = this.value.toLowerCase();
+        const filter = this.value.toLowerCase().trim();
         document.querySelectorAll('.frame-item').forEach(item => {
-            const text = item.textContent.toLowerCase();
+            const text = (item.dataset.search || item.textContent).toLowerCase();
             item.style.display = text.includes(filter) ? 'flex' : 'none';
         });
     });
@@ -1006,33 +1020,134 @@
 </script>
 
     <script>
-        // Barcode Scanner Listener: Memilih otomatis produk pertama yang cocok saat scanner mengirim Enter
-        const barcodeInput = document.getElementById('frameSearchInput');
-        if (barcodeInput) {
+        // ===== Scan Barcode Frame: scanner USB (Enter) + kamera HP (html5-qrcode) =====
+        (function() {
+            const barcodeInput = document.getElementById('frameSearchInput');
+            if (!barcodeInput) return;
+
+            if (!window.showToast) {
+                window.showToast = function(msg, type) {
+                    let box = document.getElementById('posScanToast');
+                    if (!box) {
+                        box = document.createElement('div');
+                        box.id = 'posScanToast';
+                        box.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:9999;padding:10px 18px;border-radius:14px;font:700 12px "Plus Jakarta Sans",sans-serif;color:#fff;box-shadow:0 8px 24px rgba(0,0,0,.25);transition:opacity .3s;opacity:0;';
+                        document.body.appendChild(box);
+                    }
+                    box.textContent = msg;
+                    box.style.background = type === 'error' ? '#dc2626' : '#059669';
+                    box.style.opacity = '1';
+                    clearTimeout(box._t);
+                    box._t = setTimeout(() => { box.style.opacity = '0'; }, 2200);
+                };
+            }
+
+            function selectFrameById(id, src) {
+                const radio = document.querySelector(`.frame-item input[type="radio"][value="${id}"]`);
+                if (!radio) { showToast('Frame tidak ditemukan di etalase (stok habis?)', 'error'); return false; }
+                document.querySelectorAll('.frame-item').forEach(el => el.style.display = '');
+                barcodeInput.value = '';
+                radio.checked = true;
+                radio.dispatchEvent(new Event('change'));
+                const card = radio.closest('.frame-item');
+                card.classList.add('ring-2', 'ring-emerald-500');
+                card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                setTimeout(() => card.classList.remove('ring-2', 'ring-emerald-500'), 900);
+                showToast('✓ ' + (radio.dataset.name || 'Frame') + ' dipilih via ' + src, 'success');
+                return true;
+            }
+
+            // Lookup ke server pakai kode barcode persis (AG-#####)
+            function lookupAndSelect(code, src) {
+                fetch('{{ route("pos.frame.lookup", ["code" => "__CODE__"]) }}'.replace('__CODE__', encodeURIComponent(code)), {
+                    headers: { 'Accept': 'application/json' }
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.ok) { selectFrameById(data.id, src); }
+                    else { firstVisibleOrToast(code); }
+                })
+                .catch(() => firstVisibleOrToast(code));
+            }
+
+            // Fallback: pakai hasil filter teks lokal
+            function firstVisibleOrToast(code) {
+                const visible = document.querySelectorAll('.frame-item:not([style*="display: none"]) input[type="radio"]');
+                if (visible.length > 0) {
+                    visible[0].checked = true;
+                    visible[0].dispatchEvent(new Event('change'));
+                    const card = visible[0].closest('.frame-item');
+                    card.classList.add('ring-2', 'ring-emerald-500');
+                    setTimeout(() => card.classList.remove('ring-2', 'ring-emerald-500'), 600);
+                    barcodeInput.value = '';
+                    document.querySelectorAll('.frame-item').forEach(el => el.style.display = '');
+                } else {
+                    showToast('Barcode "' + code + '" tidak terdaftar', 'error');
+                }
+            }
+
+            // 1) Scanner barcode USB / keyboard wedge — Enter menyelesaikan pemindaian
             barcodeInput.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
-                    const visibleFrames = document.querySelectorAll('.frame-item:not([style*="display: none"]) input[type="radio"]');
-                    if (visibleFrames.length > 0) {
-                        visibleFrames[0].checked = true;
-                        visibleFrames[0].dispatchEvent(new Event('change'));
-                        // Beri efek feedback
-                        visibleFrames[0].closest('.frame-item').classList.add('ring-2', 'ring-emerald-500');
-                        setTimeout(() => {
-                            visibleFrames[0].closest('.frame-item').classList.remove('ring-2', 'ring-emerald-500');
-                        }, 600);
-                        barcodeInput.value = '';
-                        document.querySelectorAll('.frame-item').forEach(el => el.style.display = '');
+                    const code = this.value.trim();
+                    if (!code) return;
+                    if (/^AG-\d+$/i.test(code) || /^\d+$/.test(code)) {
+                        lookupAndSelect(code, 'scanner');
+                    } else {
+                        firstVisibleOrToast(code);
                     }
                 }
             });
-        }
+
+            // 2) Pemindai kamera HP (html5-qrcode via CDN, format Code128/EAN/QR)
+            let frameCamReader = null;
+            window.openFrameCamScanner = function() {
+                const wrap = document.getElementById('frameCamWrap');
+                if (wrap.classList.contains('hidden') === false) { closeFrameCamScanner(); return; }
+                if (typeof Html5Qrcode === 'undefined') {
+                    showToast('Pustaka scanner belum termuat (butuh internet)', 'error');
+                    return;
+                }
+                wrap.classList.remove('hidden');
+                frameCamReader = new Html5Qrcode('frameCamReader');
+                frameCamReader.start(
+                    { facingMode: 'environment' },
+                    { fps: 10, qrbox: { width: 240, height: 120 } },
+                    (decoded) => {
+                        closeFrameCamScanner();
+                        lookupAndSelect(decoded.trim(), 'kamera');
+                    },
+                    () => {}
+                ).catch(() => {
+                    wrap.classList.add('hidden');
+                    showToast('Kamera ditolak / tidak tersedia. Gunakan tombol Scan Tag + scanner USB.', 'error');
+                });
+            };
+            window.closeFrameCamScanner = function() {
+                const wrap = document.getElementById('frameCamWrap');
+                wrap.classList.add('hidden');
+                if (frameCamReader) {
+                    frameCamReader.stop().then(() => frameCamReader.clear()).catch(() => {});
+                    frameCamReader = null;
+                }
+            };
+            // Tampilkan tombol Kamera hanya bila perangkat punya kamera + HTTPS
+            const camBtn = document.getElementById('frameCamScanBtn');
+            function revealCamBtn() {
+                if (camBtn && navigator.mediaDevices && window.isSecureContext && typeof Html5Qrcode !== 'undefined') {
+                    camBtn.classList.remove('hidden');
+                    camBtn.classList.add('flex');
+                }
+            }
+            window.addEventListener('load', revealCamBtn);
+            revealCamBtn();
+        })();
     </script>
 
     <script>
     // ===== Pintu Cepat Kasir: navigasi 4 langkah =====
     function posGoStep(targetId) {
-        // Lensa & Resep hanya ada di mode tertentu — jika tersembunyi, arahkan ke pilihan tipe dulu
         if (targetId === 'sectionLens') {
             const lensSection = document.getElementById('sectionLens');
             if (lensSection && lensSection.classList.contains('hidden')) {

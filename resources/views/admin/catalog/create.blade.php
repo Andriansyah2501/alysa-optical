@@ -44,6 +44,11 @@
                 <input type="text" name="brand" value="Alysa Eyewear" required class="w-full px-4 py-2.5 bg-sand-50 border border-sand-300 rounded-xl font-medium text-slate-800">
             </div>
             <div>
+                <label class="font-bold text-slate-700 block mb-1">Kode Barcode Tag</label>
+                <input type="text" name="barcode" value="{{ old('barcode') }}" placeholder="Kosong = otomatis AG-xxxxx" class="w-full px-4 py-2.5 bg-sand-50 border border-sand-300 rounded-xl font-mono uppercase text-slate-800">
+                <span class="text-[10px] text-slate-400 mt-0.5 block">Scan dengan barcode scanner USB / HP di kasir.</span>
+            </div>
+            <div>
                 <label class="font-bold text-slate-700 block mb-1">Bentuk Frame (Shape) <span class="text-rose-500">*</span></label>
                 <select name="frame_shape" required class="w-full px-4 py-2.5 bg-sand-50 border border-sand-300 rounded-xl font-medium text-slate-800">
                     <option value="Round">Round (Bulat)</option>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Category;
+use App\Services\BarcodeService;
 use Illuminate\Support\Str;
 
 class ProductCatalogController extends Controller
@@ -55,6 +56,7 @@ class ProductCatalogController extends Controller
             'stock' => 'required|integer|min:0',
             'description' => 'required|string',
             'image_url' => 'nullable|url',
+            'barcode' => 'nullable|string|max:32|unique:products,barcode',
             'is_bestseller' => 'nullable|boolean',
             'is_new' => 'nullable|boolean',
         ]);
@@ -64,6 +66,11 @@ class ProductCatalogController extends Controller
         $data['image_url'] = $data['image_url'] ?: 'https://images.unsplash.com/photo-1591076482161-42ce6da69f67?auto=format&fit=crop&w=800&q=80';
         $data['is_bestseller'] = $request->has('is_bestseller');
         $data['is_new'] = $request->has('is_new');
+        if (empty($data['barcode'])) {
+            unset($data['barcode']); // biarkan model generate AG-##### otomatis
+        } else {
+            $data['barcode'] = strtoupper(trim($data['barcode']));
+        }
 
         Product::create($data);
 
@@ -93,10 +100,14 @@ class ProductCatalogController extends Controller
             'stock' => 'required|integer|min:0',
             'description' => 'required|string',
             'image_url' => 'nullable|url',
+            'barcode' => 'nullable|string|max:32|unique:products,barcode,' . $product->id,
         ]);
 
         $data['is_bestseller'] = $request->has('is_bestseller');
         $data['is_new'] = $request->has('is_new');
+        $data['barcode'] = !empty($data['barcode'])
+            ? strtoupper(trim($data['barcode']))
+            : sprintf('AG-%05d', $product->id);
 
         $product->update($data);
 
@@ -108,5 +119,42 @@ class ProductCatalogController extends Controller
         $name = $product->name;
         $product->delete();
         return redirect()->route('admin.katalog.index')->with('success', "Kacamata {$name} telah dihapus dari katalog.");
+    }
+
+    /**
+     * Lembar cetak label barcode (satu frame atau seluruh katalog).
+     */
+    public function barcodeLabels(Request $request)
+    {
+        $query = Product::query()->whereNotNull('barcode')->orderBy('id');
+
+        if ($request->filled('product')) {
+            $query->whereIn('id', (array) $request->input('product'));
+        }
+
+        $products = $query->get()->each(function ($p) {
+            $p->barcode_svg = BarcodeService::svg($p->barcode);
+        });
+
+        return view('admin.catalog.labels', compact('products'));
+    }
+
+    /**
+     * Generate kode barcode yang hilang/belum pernah dibuat untuk produk lama.
+     */
+    public function generateBarcodes()
+    {
+        $count = 0;
+        Product::where(function ($q) {
+            $q->whereNull('barcode')->orWhere('barcode', '');
+        })->chunkById(100, function ($products) use (&$count) {
+            foreach ($products as $product) {
+                BarcodeService::ensureFor($product);
+                $count++;
+            }
+        });
+
+        return back()->with('success', $count . ' kode barcode berhasil dibuat. '
+            . 'Total ' . Product::whereNotNull('barcode')->count() . ' produk siap dipindai di kasir.');
     }
 }
