@@ -1,66 +1,164 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 👓 Alysa Glasses — Web POS & Sistem Manajemen Toko Kacamata
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+> **Eyewear That Completes Your Look.**
+> Aplikasi web lengkap untuk toko kacamata: katalog online, order dengan resep lensa, kasir POS, manajemen stok & pelanggan, laporan penjualan, dan notifikasi WhatsApp otomatis.
 
-## About Laravel
+🌐 **Live:** https://alysa.andrian-syah.my.id
+📍 **Area layanan:** Batam • Tanjung Pinang • Bintan, Kepulauan Riau
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## ✨ Fitur
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 🛍️ Toko Online (Publik)
+- Katalog frame (optik, sunglasses polarized, titanium, cat eye, wayfarer, dst.) dengan filter kategori, bentuk frame, gender, dan pencarian
+- Detail produk per frame: harga, diskon, stok, warna, ukuran, deskripsi
+- **Order Online** — pelanggan memesan dengan resep mata (SP/Si, addisi), pilih frame + jenis lensa, apply voucher
+- **Lacak Pesanan** berbasis kode resi (format `POS-YYYYMMDD-XXXXX`)
+- **Kalender Promo** publik + tabel harga lensa (blueray, photocromic, bluecromic, progresif, anti fog, night drive)
+- Halaman **Tentang / Kontak / FAQ**
+- **PWA**: `manifest.json` + `service worker` + APK wrapper (`Alysa_Optical.apk`)
+- SEO: `sitemap.xml` otomatis, meta description + Open Graph per halaman, canonical URL
 
-## Learning Laravel
+### 🧾 Kasir / POS (Cashier)
+- Transaksi cepat: produk stok + item custom/jasa non-stok
+- Pembayaran tunai/debit + **uang muka (DP)** dan pelunasan
+- Struk digital (link via WhatsApp) + struk PDF + **endpoint data thermal 58 mm** untuk printer kasir
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### 🛠️ Admin & Optik
+- **Dashboard optik**: ringkasan order & status produksi
+- **Katalog**: CRUD produk + upload gambar + tanda featured/bestseller
+- **Pesanan**: update status (menunggu → proses → selesai), detail resep per order
+- **Pelanggan**: data pelanggan + riwayat + kirim notifikasi WA manual
+- **Pengaturan Toko**: profil toko (nama, alamat, IG, TikTok, WA channel, jam operasional), lensa (CRUD), user & role (CRUD), voucher (CRUD + aktif/nonaktif)
+- **Kalender Promo** (CRUD event promo)
+- **Laporan Penjualan**: filter periode, unduh **PDF & Excel**, + endpoint API internal untuk dashboard n8n
+- **Pemasukan/Pengeluaran**: pencatatan arus kas sederhana
+- **Backup Database** on-demand + unduh
+- **Server Status**: ping test & monitoring
+- **Tunnel Manager**: kontrol Cloudflare Tunnel dari panel
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### 📲 Integrasi WhatsApp
+- Gateway WA lokal via **WAHA** (WhatsApp API HTTP, container Docker) — QR login dari panel admin
+- Alternatif provider: n8n webhook / Fonnte / WPPConnect (konfigurasi via `store_settings`)
+- Notifikasi otomatis: order masuk → WA owner/pelanggan, konfirmasi pembayaran, status pesanan
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## 🧱 Tech Stack
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+| Layer | Teknologi |
+|---|---|
+| Framework | **Laravel 10** (PHP ≥ 8.1) |
+| Database | **MySQL/MariaDB** (14 tabel) |
+| PDF | barryvdh/laravel-dompdf |
+| HTTP client | Guzzle (integrasi WA gateway) |
+| Auth | Session + role-based middleware (`RoleCheck`), Laravel Sanctum |
+| Frontend | Blade + TailwindCSS (CDN) + Font Awesome |
+| PWA | manifest + service worker + APK |
+| Infra | Nginx → PHP-FPM 8.1 → Docker (WAHA), Cloudflare Tunnel |
 
-### Premium Partners
+## 🗂️ Struktur Proyek
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+```
+app/
+├── Http/
+│   ├── Controllers/
+│   │   ├── AuthController.php          # login/logout multi-role
+│   │   ├── GlassesShopController.php   # toko publik, checkout, lacak, dashboard optik
+│   │   ├── PosController.php           # kasir, struk, data thermal
+│   │   ├── ProductCatalogController.php# CRUD katalog
+│   │   ├── CustomerController.php      # pelanggan + kirim WA
+│   │   ├── StoreSettingController.php  # pengaturan, lensa, user, voucher, WA QR
+│   │   ├── ReportController.php        # laporan PDF/Excel + API n8n
+│   │   ├── ExpenseController.php       # pemasukan/pengeluaran
+│   │   ├── PromoCalendarController.php # kalender promo
+│   │   ├── SitemapController.php       # sitemap.xml + halaman Tentang
+│   │   ├── BackupController.php        # backup DB
+│   │   ├── ServerNetworkController.php # server status & ping
+│   │   └── TunnelManagerController.php # kontrol cloudflared
+│   └── Middleware/
+│       └── RoleCheck.php               # gate per role
+├── Models/                             # Product, Order, OrderItem, Customer,
+│                                       # Voucher, LensType, PromoEvent, StoreSetting, dll.
+resources/views/
+├── layouts/app.blade.php               # layout utama + SEO meta
+├── shop/                               # halaman publik (+ about & sitemap)
+├── pos/                                # kasir + struk
+├── admin/                              # modul admin
+└── auth/                               # login
+routes/web.php                          # seluruh rute
+database/migrations/                    # 12 migrasi
+tests/                                  # PHPUnit (kerangka)
+```
 
-## Contributing
+## 👥 Role & Hak Akses
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+| Role | Akses |
+|---|---|
+| `super_admin` | Mutlak seluruh modul |
+| `admin` | Semua modul operasional toko |
+| `optician` | Dashboard optik, status produksi pesanan |
+| `cashier` | POS/kasir + struk |
 
-## Code of Conduct
+Dikelola dari **Admin → Pengaturan → User**. Akun nonaktif otomatis ditolak login.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## 🚀 Instalasi (Development)
 
-## Security Vulnerabilities
+```bash
+git clone https://github.com/Andriansyah2501/alysa-optical.git
+cd alysa-optical
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+composer install
+cp .env.example .env        # lalu isi DB_*, APP_URL
+php artisan key:generate
 
-## License
+# konfigurasi koneksi MySQL di .env, lalu:
+php artisan migrate --seed  # tabel + data awal (lensa, voucher, pengaturan toko)
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+php artisan serve           # http://localhost:8000
+```
+
+**Deploy produksi (referensi):** Nginx site mengarah ke `public/`, PHP-FPM via unix socket,
+`php artisan config:cache route:cache view:cache`, storage 775 untuk `www-data`.
+
+## 🔗 Rute Utama
+
+| Rute | Method | Keterangan |
+|---|---|---|
+| `/` | GET | Katalog & landing toko |
+| `/kacamata/{slug}` | GET | Detail frame |
+| `/order-online` | GET/POST | Portal order pelanggan |
+| `/checkout` → `/checkout/proses` | GET/POST | Keranjang & simpan order |
+| `/lacak-pesanan` | GET | Cek status via kode order |
+| `/kalender-promo` | GET | Promo berjalan |
+| `/tentang` | GET | Tentang, kontak, FAQ |
+| `/sitemap.xml` | GET | Sitemap dinamis |
+| `/pos` , `/pos/bayar`, `/pos/struk/{kode}` | GET/POST | Modul kasir |
+| `/pos/thermer-data/{kode}` | GET | JSON struk thermal 58 mm |
+| `/admin/*` | GET/POST | Modul admin (auth + role) |
+| `/api/internal/laporan-summary` | GET | API laporan untuk n8n/owner |
+
+## 📸 Screenshots
+
+> *(tambahkan screenshot katalog, POS, dashboard admin, dan halaman Tentang di folder `docs/`)*
+
+## 🧪 Testing
+
+```bash
+php artisan test
+```
+
+## 📝 Catatan Keamanan
+
+- Jangan pernah commit `.env` (sudah di-gitignore) — token WA & kredensial DB ada di sana
+- `APP_DEBUG=false` di produksi
+- Endpoint `/api/internal/*` sebaiknya hanya diakses dari jaringan lokal/tunnel tepercaya
+
+---
+
+<div align="center">
+
+Dibangun untuk **Alysa Glasses & Eyewear Studio Batam** 👓✨
+
+</div>
