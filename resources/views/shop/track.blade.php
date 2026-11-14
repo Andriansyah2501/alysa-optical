@@ -38,14 +38,23 @@
 
                 if (str_contains($st, 'selesai') || str_contains($st, 'diterima pelanggan') || str_contains($st, 'dibayar di kasir')) {
                     $step = 5;
-                } elseif (str_contains($st, 'sedang dikirim') || str_contains($st, 'kurir') || str_contains($st, 'perjalanan')) {
+                } elseif (str_contains($st, 'sedang dikirim') || str_contains($st, 'kurir') || str_contains($st, 'perjalanan') || str_contains($st, 'pengiriman')) {
                     $step = 4;
-                } elseif (str_contains($st, 'siap dikirim') || str_contains($st, 'diserahkan') || str_contains($st, 'packing') || str_contains($st, 'quality control') || str_contains($st, 'qc')) {
+                } elseif (str_contains($st, 'siap dikirim') || str_contains($st, 'siap diambil') || str_contains($st, 'diserahkan') || str_contains($st, 'packing') || str_contains($st, 'pemasangan') || str_contains($st, 'quality control') || str_contains($st, 'qc')) {
                     $step = 3;
-                } elseif (str_contains($st, 'potong lensa') || str_contains($st, 'lab optik') || str_contains($st, 'assembling') || str_contains($st, 'perakitan')) {
+                } elseif (str_contains($st, 'potong lensa') || str_contains($st, 'lab optik') || str_contains($st, 'diproses di lab') || str_contains($st, 'assembling') || str_contains($st, 'perakitan')) {
                     $step = 2;
                 } else {
                     $step = 1;
+                }
+
+                // OVERRIDE: transaksi POS kasir dibayar LUNAS full = barang langsung diterima
+                // -> selalu tampil SELESAI (step 5) walau string statusnya belum sinkron/cache.
+                $isPosFullLunas = str_starts_with($order->order_code, 'POS-')
+                    && strtoupper($order->payment_status) === 'LUNAS'
+                    && $order->payment_type !== 'dp';
+                if ($isPosFullLunas && $step < 5) {
+                    $step = 5;
                 }
 
                 $badgeBg = 'bg-amber-100 text-amber-800 border-amber-300';
