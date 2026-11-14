@@ -124,6 +124,19 @@ class CustomerController extends Controller
     /**
      * Hapus data pelanggan
      */
+    /**
+     * AJAX: ambil data resep sebuah struk POS utk prefill Kartu Resep.
+     */
+    public function lookupRx($orderCode)
+    {
+        $o = \App\Models\Order::where('order_code', $orderCode)->firstOrFail();
+        return response()->json([
+            'sph_r' => $o->sph_r, 'cyl_r' => $o->cyl_r, 'axis_r' => $o->axis_r,
+            'sph_l' => $o->sph_l, 'cyl_l' => $o->cyl_l, 'axis_l' => $o->axis_l,
+            'pd' => $o->pd, 'notes' => $o->prescription_notes,
+        ]);
+    }
+
     public function destroy($id)
     {
         $customer = Customer::findOrFail($id);

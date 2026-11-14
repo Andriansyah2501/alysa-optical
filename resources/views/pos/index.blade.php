@@ -311,9 +311,12 @@
                     <!-- Toggle Resep Mata -->
                     <div class="p-3 bg-sand-50 rounded-2xl border border-sand-200 flex items-center gap-2">
                         <input type="checkbox" id="posPrescriptionToggle" name="has_prescription" value="1" checked class="w-4 h-4 text-brand-600 rounded">
-                        <label for="posPrescriptionToggle" class="text-xs font-bold text-slate-800 cursor-pointer">
+                        <label for="posPrescriptionToggle" class="text-xs font-bold text-slate-800 cursor-pointer flex-1">
                             Input Ukuran Resep Pasien (Minus / Silinder / Axis)
                         </label>
+                        @if(Auth::user()->canAccessAdminArea())
+                        <a href="{{ route('admin.prescriptions.create') }}" target="_blank" title="Buat Kartu Resep Arsip" class="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[9px] font-extrabold shrink-0"><i class="fa-solid fa-file-medical"></i> Kartu</a>
+                        @endif
                     </div>
 
                     <!-- Input Resep Matriks -->

@@ -224,6 +224,9 @@
                                         <a href="{{ route('admin.customers.index') }}" class="flex items-center gap-2 px-3 py-1.5 text-slate-700 hover:bg-brand-50 hover:text-brand-700 font-medium transition-colors">
                                             <i class="fa-solid fa-users text-emerald-600 w-4"></i> Pelanggan & Resep
                                         </a>
+                                        <a href="{{ route('admin.prescriptions.index') }}" class="flex items-center gap-2 px-3 py-1.5 text-slate-700 hover:bg-brand-50 hover:text-brand-700 font-medium transition-colors">
+                                            <i class="fa-solid fa-prescription text-blue-600 w-4"></i> Kartu Resep
+                                        </a>
                                         @if(in_array(Auth::user()->role, ['admin', 'super_admin']))
                                             <a href="{{ route('admin.katalog.index') }}" class="flex items-center gap-2 px-3 py-1.5 text-slate-700 hover:bg-brand-50 hover:text-brand-700 font-medium transition-colors">
                                                 <i class="fa-solid fa-boxes-stacked text-purple-500 w-4"></i> Katalog & Barcode

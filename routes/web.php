@@ -83,6 +83,19 @@ Route::middleware(['auth', 'role:admin,optician'])->prefix('admin')->group(funct
 
     
     // Buku Kas, Belanja Modal & Arus Kas (Cashflow Toko)
+    Route::get('/pelanggan/cari-resep/{orderCode}', [\App\Http\Controllers\CustomerController::class, 'lookupRx'])->name('admin.customers.lookup-rx');
+
+    // Kartu Resep (Refraksionis & Admin)
+    Route::get('/kartu-resep', [\App\Http\Controllers\PrescriptionCardController::class, 'index'])->name('admin.prescriptions.index');
+    Route::get('/kartu-resep/buat', [\App\Http\Controllers\PrescriptionCardController::class, 'create'])->name('admin.prescriptions.create');
+    Route::post('/kartu-resep', [\App\Http\Controllers\PrescriptionCardController::class, 'store'])->name('admin.prescriptions.store');
+    Route::get('/kartu-resep/{id}', [\App\Http\Controllers\PrescriptionCardController::class, 'show'])->name('admin.prescriptions.show');
+    Route::get('/kartu-resep/{id}/edit', [\App\Http\Controllers\PrescriptionCardController::class, 'edit'])->name('admin.prescriptions.edit');
+    Route::put('/kartu-resep/{id}', [\App\Http\Controllers\PrescriptionCardController::class, 'update'])->name('admin.prescriptions.update');
+    Route::delete('/kartu-resep/{id}', [\App\Http\Controllers\PrescriptionCardController::class, 'destroy'])->name('admin.prescriptions.destroy');
+    Route::get('/kartu-resep/{id}/cetak', [\App\Http\Controllers\PrescriptionCardController::class, 'print'])->name('admin.prescriptions.print');
+    Route::get('/kartu-resep/{id}/pdf', [\App\Http\Controllers\PrescriptionCardController::class, 'pdf'])->name('admin.prescriptions.pdf');
+
     Route::get('/pengeluaran', [ExpenseController::class, 'index'])->name('admin.expenses.index');
     Route::post('/pengeluaran', [ExpenseController::class, 'store'])->name('admin.expenses.store');
     Route::put('/pengeluaran/modal/{order}/hpp', [ExpenseController::class, 'updateModalHpp'])->name('admin.expenses.modal.hpp');
