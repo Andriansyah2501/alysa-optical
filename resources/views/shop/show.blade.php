@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', $product->name . ' | Alysa Glasses')
+@section('meta_description', Str::limit(strip_tags($product->description ?? ''), 155, '…') . ' — ' . ($product->brand ?? 'Alysa Glasses') . ', tersedia di Alysa Glasses Batam.')
 
 @section('content')
 

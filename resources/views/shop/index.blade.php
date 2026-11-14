@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Koleksi Kacamata Alysa Glasses & Promo 11.11 Lensa Optik | Alysa Glasses')
+@section('meta_description', 'Jelajahi koleksi frame Alysa Glasses Batam: kacamata optik, sunglasses polarized, titanium ringan. Lengkap dengan paket lensa blueray, photocromic, progresif & anti fog. Pesan online, lacak pesanan.')
 
 @section('content')
 

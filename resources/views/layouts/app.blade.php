@@ -6,6 +6,15 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Alysa Glasses | Toko Kacamata & Lensa Optik Modern')</title>
 
+    <!-- SEO dasar (aditif): canonical + description + Open Graph -->
+    <link rel="canonical" href="{{ url()->current() }}">
+    <meta name="description" content="@yield('meta_description', 'Toko kacamata Alysa Glasses Batam — frame optik, sunglasses polarized, titanium, lensa blueray & progresif. Pesan online, lacak pesanan, garansi lensa.')">
+    <meta property="og:site_name" content="Alysa Glasses">
+    <meta property="og:title" content="@yield('title', 'Alysa Glasses | Toko Kacamata & Lensa Optik Modern')">
+    <meta property="og:description" content="@yield('meta_description', 'Eyewear That Completes Your Look — Batam • Tanjung Pinang • Bintan.')">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url()->current() }}">
+
     <!-- Google Fonts: Plus Jakarta Sans & Playfair Display -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -162,6 +171,9 @@
                         <a href="{{ route('shop.track') }}" class="hover:text-brand-600 transition-colors py-1 {{ request()->routeIs('shop.track') ? 'text-brand-600 border-b-2 border-brand-500' : '' }}">
                             <i class="fa-solid fa-location-crosshairs mr-0.5 text-brand-500"></i> Lacak
                         </a>
+                        <a href="{{ route('shop.about') }}" class="hover:text-brand-600 transition-colors py-1 {{ request()->routeIs('shop.about') ? 'text-brand-600 border-b-2 border-brand-500' : '' }}">
+                            <i class="fa-regular fa-circle-info mr-0.5 text-brand-500"></i> Tentang
+                        </a>
                     </nav>
                 </div>
 
@@ -270,6 +282,9 @@
             <a href="{{ route('shop.track') }}" class="whitespace-nowrap px-2 py-0.5 rounded-md {{ request()->routeIs('shop.track') ? 'bg-brand-600 text-white' : 'bg-white text-slate-700 border border-sand-200' }}">
                 <i class="fa-solid fa-location-crosshairs mr-0.5 text-[9px]"></i> Lacak
             </a>
+            <a href="{{ route('shop.about') }}" class="whitespace-nowrap px-2 py-0.5 rounded-md {{ request()->routeIs('shop.about') ? 'bg-brand-600 text-white' : 'bg-white text-slate-700 border border-sand-200' }}">
+                <i class="fa-regular fa-circle-info mr-0.5 text-[9px]"></i> Tentang
+            </a>
             @php
                 $cleanPhoneMobile = preg_replace('/[^0-9]/', '', $globalSettings['store_phone'] ?? '087888883318');
                 $waMobile = str_starts_with($cleanPhoneMobile, '0') ? '62' . substr($cleanPhoneMobile, 1) : $cleanPhoneMobile;
@@ -360,6 +375,7 @@
                     <h4 class="font-bold text-xs uppercase tracking-wider text-slate-900">Jaminan & Garansi</h4>
                     <ul class="space-y-2 text-xs text-slate-600">
                         <li><a href="{{ route('shop.track') }}" class="hover:text-brand-600">Pelacakan Pesanan Resi</a></li>
+                        <li><a href="{{ route('shop.about') }}" class="hover:text-brand-600">Tentang Kami & FAQ</a></li>
                         <li><span class="text-slate-500">Garansi Lensa Nyaman 30 Hari</span></li>
                         <li><span class="text-slate-500">Free Penyetelan Hidung & Baut</span></li>
                         <li><span class="text-slate-500">Free Cuci Kacamata Ultrasonik</span></li>

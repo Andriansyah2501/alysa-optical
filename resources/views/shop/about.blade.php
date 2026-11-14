@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Tentang Alysa Glasses — Kontak, Layanan & FAQ | Alysa Glasses')
+@section('meta_description', 'Kenali Alysa Glasses — toko kacamata modern Batam, Tanjung Pinang & Bintan. Kontak WhatsApp, Instagram, jam operasional, dan jawaban pertanyaan seputar order resep, lensa, pengiriman, garansi, dan lacak pesanan.')
 
 @section('content')
 
