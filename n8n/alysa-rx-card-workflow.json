@@ -1,6 +1,6 @@
 [
  {
-  "updatedAt": "2026-11-14T17:21:21.000Z",
+  "updatedAt": "2026-11-14T17:27:32.000Z",
   "createdAt": "2026-11-14T16:46:53.666Z",
   "id": "LCDzAwC0IGrqWIbo",
   "name": "Alysa Optical - Kartu Resep WA Otomatis",
@@ -123,7 +123,7 @@
    },
    {
     "parameters": {
-     "jsCode": "const b = $('Webhook Kartu Resep').first().json.body;\nreturn [{ json: { payload: {\n  session: 'default',\n  chatId: b.customer_phone + '@c.us',\n  file: {\n    url: b.download_url || b.pdf_url,\n    fileName: 'Kartu_Resep_' + b.card_code + '.pdf',\n    caption: 'Kartu Resep PDF - ' + b.card_code\n  }\n} } }];"
+     "jsCode": "const b = $('Webhook Kartu Resep').first().json.body;\nreturn [{ json: { payload: {\n  session: 'default',\n  chatId: b.customer_phone + '@c.us',\n  file: {\n    url: b.download_url || b.pdf_url,\n    fileName: b.pdf_file_name || ('Kartu_Resep_' + b.card_code + '.pdf'),\n    caption: 'Kartu Resep PDF - ' + b.card_code\n  }\n} } }];"
     },
     "id": "rx-code-pdf-body",
     "name": "Susun Body PDF",
@@ -189,9 +189,9 @@
   "meta": null,
   "nodeGroups": [],
   "pinData": null,
-  "versionId": "e23a1f2c-7555-4c2c-bb22-5e1f1d9c1f2d",
-  "activeVersionId": "e23a1f2c-7555-4c2c-bb22-5e1f1d9c1f2d",
-  "versionCounter": 2,
+  "versionId": "90f158fa-bc3a-4454-80e8-c966ba4df6c9",
+  "activeVersionId": "90f158fa-bc3a-4454-80e8-c966ba4df6c9",
+  "versionCounter": 3,
   "triggerCount": 1,
   "sourceWorkflowId": null,
   "tags": [],

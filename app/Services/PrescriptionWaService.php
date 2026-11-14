@@ -51,6 +51,7 @@ class PrescriptionWaService
             'share_url' => $shareUrl,
             'pdf_url' => $pdfUrl,
             'download_url' => $downloadUrl,
+            'pdf_file_name' => $card->pdfFileName(),
             'exam_date' => (string) $card->exam_date,
             'timestamp' => now()->toIso8601String(),
         ];
@@ -81,7 +82,7 @@ class PrescriptionWaService
                     'session' => 'default', 'chatId' => $target . '@c.us',
                     'file' => [
                         'url' => $downloadUrl,
-                        'fileName' => 'Kartu_Resep_' . $card->card_code . '.pdf',
+                        'fileName' => $card->pdfFileName(),
                         'caption' => 'Kartu Resep PDF — ' . $card->card_code,
                     ],
                 ]);

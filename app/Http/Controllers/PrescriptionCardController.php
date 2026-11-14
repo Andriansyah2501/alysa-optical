@@ -129,7 +129,7 @@ class PrescriptionCardController extends Controller
         $settings = StoreSetting::all()->pluck('value', 'key');
         $pdf = Pdf::loadView('admin.prescriptions.pdf', compact('card', 'settings'))
             ->setPaper('a5', 'portrait');
-        return $pdf->stream('Kartu_Resep_' . $card->card_code . '_' . preg_replace('/\W+/', '_', $card->customer_name) . '.pdf');
+        return $pdf->stream($card->pdfFileName());
     }
 
     /** AR-10. Kirim / ulang kartu ke WA pasien (tombol manual). */
@@ -166,7 +166,7 @@ class PrescriptionCardController extends Controller
         $settings = StoreSetting::all()->pluck('value', 'key');
         $pdf = Pdf::loadView('admin.prescriptions.pdf', compact('card', 'settings'))
             ->setPaper('a5', 'portrait');
-        return $pdf->stream('Kartu_Resep_' . $card->card_code . '.pdf');
+        return $pdf->stream($card->pdfFileName());
     }
 
     /** AR-13. Status gateway WA + QR pairing (live proxy WAHA) utk halaman Kartu Resep. */

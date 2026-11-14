@@ -48,6 +48,13 @@ class PrescriptionCard extends Model
         return url('/r/' . $this->ensureShareToken() . '/pdf');
     }
 
+    /** Nama file PDF seragam: Kartu_Resep_<kode>_<tgl periksa Y-m-d>.pdf */
+    public function pdfFileName(): string
+    {
+        $tgl = $this->exam_date ? \Carbon\Carbon::parse($this->exam_date)->format('Y-m-d') : date('Y-m-d');
+        return 'Kartu_Resep_' . $this->card_code . '_' . $tgl . '.pdf';
+    }
+
     public static function generateCode(): string
     {
         return 'RX-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -5));
