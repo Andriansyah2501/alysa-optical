@@ -134,3 +134,7 @@ Route::middleware(['auth', 'role:admin,optician'])->prefix('admin')->group(funct
 
 // Endpoint Internal API Laporan Lengkap untuk n8n & Owner
 Route::get('/api/internal/laporan-summary', [\App\Http\Controllers\ReportController::class, 'apiSummary'])->name('api.reports.summary');
+
+// === FITUR BARU (aditif): SEO Sitemap & Halaman Tentang/Kontak/FAQ ===
+Route::get('/sitemap.xml', [\App\Http\Controllers\SitemapController::class, 'index'])->name('shop.sitemap');
+Route::get('/tentang', [\App\Http\Controllers\SitemapController::class, 'about'])->name('shop.about');
