@@ -3,10 +3,17 @@
 @section('title', 'Point of Sales (POS) Kasir Optik | Alysa Glasses')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<style>
+    /* HP: input min 16px agar tidak auto-zoom di iOS */
+    @media (max-width: 640px) {
+        #posForm input, #posForm select, #posForm textarea { font-size: 16px !important; }
+        #posForm .pos-tiny-keep { font-size: 11px !important; }
+    }
+</style>
+<div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-8 pb-28 lg:pb-8">
     
     <!-- Header Kasir -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-sand-200">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 sm:pb-6 border-b border-sand-200">
         <div>
             <div class="flex items-center gap-2">
                 <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold uppercase tracking-wider">
@@ -14,8 +21,8 @@
                 </span>
                 <span class="text-xs text-slate-400">• {{ Auth::user()->name }} ({{ strtoupper(Auth::user()->role) }})</span>
             </div>
-            <h1 class="font-serif text-3xl font-bold text-slate-900 mt-1">Sistem Kasir Toko Kacamata</h1>
-            <p class="text-xs text-slate-500 mt-0.5">Penjualan kacamata etalase, custom frame & harga, ganti kaca saja, dan upah jasa servis.</p>
+            <h1 class="font-serif text-xl sm:text-3xl font-bold text-slate-900 mt-1">Sistem Kasir Toko Kacamata</h1>
+            <p class="text-[11px] sm:text-xs text-slate-500 mt-0.5 line-clamp-2 sm:line-clamp-none">Penjualan kacamata etalase, custom frame & harga, ganti kaca saja, dan upah jasa servis.</p>
         </div>
 
         <div class="flex items-center gap-3">
@@ -31,18 +38,18 @@
     </div>
 
     <!-- Pintu Cepat Kasir (Step Bar) -->
-    <div class="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] font-bold">
-        <button type="button" onclick="posGoStep('posStepPelanggan')" class="pos-step-btn flex items-center justify-center gap-2 px-3 py-3 rounded-2xl bg-brand-600 text-white shadow-sm transition-all" data-step="posStepPelanggan">
-            <span class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[10px]">1</span> Pelanggan
+    <div class="mt-5 grid grid-cols-4 sm:grid-cols-4 gap-1.5 sm:gap-2 text-[10px] sm:text-[11px] font-bold">
+        <button type="button" onclick="posGoStep('posStepPelanggan')" class="pos-step-btn flex items-center justify-center gap-1.5 px-1.5 sm:px-3 py-3 rounded-2xl bg-brand-600 text-white shadow-sm transition-all" data-step="posStepPelanggan">
+            <span class="w-5 h-5 shrink-0 rounded-full bg-white/20 flex items-center justify-center text-[10px]">1</span> <span class="hidden sm:inline">Pelanggan</span><span class="sm:hidden">Data</span>
         </button>
-        <button type="button" onclick="posGoStep('posStepTransaksi')" class="pos-step-btn flex items-center justify-center gap-2 px-3 py-3 rounded-2xl bg-white text-slate-700 border border-sand-300 hover:bg-sand-50 transition-all" data-step="posStepTransaksi">
-            <span class="w-5 h-5 rounded-full bg-sand-100 flex items-center justify-center text-[10px]">2</span> Tipe & Barang
+        <button type="button" onclick="posGoStep('posStepTransaksi')" class="pos-step-btn flex items-center justify-center gap-1.5 px-1.5 sm:px-3 py-3 rounded-2xl bg-white text-slate-700 border border-sand-300 hover:bg-sand-50 transition-all" data-step="posStepTransaksi">
+            <span class="w-5 h-5 shrink-0 rounded-full bg-sand-100 flex items-center justify-center text-[10px]">2</span> <span class="hidden sm:inline">Tipe & Barang</span><span class="sm:hidden">Barang</span>
         </button>
-        <button type="button" onclick="posGoStep('sectionLens')" class="pos-step-btn flex items-center justify-center gap-2 px-3 py-3 rounded-2xl bg-white text-slate-700 border border-sand-300 hover:bg-sand-50 transition-all" data-step="sectionLens">
-            <span class="w-5 h-5 rounded-full bg-sand-100 flex items-center justify-center text-[10px]">3</span> Lensa & Resep
+        <button type="button" onclick="posGoStep('sectionLens')" class="pos-step-btn flex items-center justify-center gap-1.5 px-1.5 sm:px-3 py-3 rounded-2xl bg-white text-slate-700 border border-sand-300 hover:bg-sand-50 transition-all" data-step="sectionLens">
+            <span class="w-5 h-5 shrink-0 rounded-full bg-sand-100 flex items-center justify-center text-[10px]">3</span> <span class="hidden sm:inline">Lensa & Resep</span><span class="sm:hidden">Lensa</span>
         </button>
-        <button type="button" onclick="posGoStep('posStepBilling')" class="pos-step-btn flex items-center justify-center gap-2 px-3 py-3 rounded-2xl bg-white text-slate-700 border border-sand-300 hover:bg-sand-50 transition-all" data-step="posStepBilling">
-            <span class="w-5 h-5 rounded-full bg-sand-100 flex items-center justify-center text-[10px]">4</span> Bayar & Struk
+        <button type="button" onclick="posGoStep('posStepBilling')" class="pos-step-btn flex items-center justify-center gap-1.5 px-1.5 sm:px-3 py-3 rounded-2xl bg-white text-slate-700 border border-sand-300 hover:bg-sand-50 transition-all" data-step="posStepBilling">
+            <span class="w-5 h-5 shrink-0 rounded-full bg-sand-100 flex items-center justify-center text-[10px]">4</span> <span class="hidden sm:inline">Bayar & Struk</span><span class="sm:hidden">Bayar</span>
         </button>
     </div>
 
@@ -51,13 +58,13 @@
         @csrf
         <input type="hidden" name="voucher_code" id="posInputVoucher" value="">
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-8 items-start">
             
             <!-- Left Side: Pelanggan, Pilihan Transaksi & Resep (7 Kolom) -->
             <div class="lg:col-span-7 space-y-6">
                 
                 <!-- 1. Identitas Pelanggan Toko -->
-                <div id="posStepPelanggan" class="bg-white p-6 rounded-3xl border border-sand-200 shadow-sm space-y-4 scroll-mt-36">
+                <div id="posStepPelanggan" class="bg-white p-4 sm:p-6 rounded-3xl border border-sand-200 shadow-sm space-y-4 scroll-mt-36">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-sand-200">
                         <h3 class="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-2">
                             <i class="fa-solid fa-user text-brand-600"></i> Identitas Pelanggan & Rekam Medis
@@ -111,13 +118,13 @@
                         </div>
                         <div>
                             <label class="font-bold text-slate-700 block mb-1">Biaya Ongkir (Rp)</label>
-                            <input type="number" name="shipping_cost" id="posShippingCost" min="0" step="1000" value="0" placeholder="0" class="w-full px-3 py-2 bg-sand-50 border border-sand-300 rounded-xl text-xs font-mono font-bold text-slate-800 focus:bg-white">
+                            <input type="number" inputmode="numeric" name="shipping_cost" id="posShippingCost" min="0" step="1000" value="0" placeholder="0" class="w-full px-3 py-2 bg-sand-50 border border-sand-300 rounded-xl text-xs font-mono font-bold text-slate-800 focus:bg-white">
                         </div>
                     </div>
                 </div>
 
                 <!-- 2. PILIHAN TIPE TRANSAKSI (Tab Navigasi Mode) -->
-                <div id="posStepTransaksi" class="bg-white p-6 rounded-3xl border border-sand-200 shadow-sm space-y-5 scroll-mt-36">
+                <div id="posStepTransaksi" class="bg-white p-4 sm:p-6 rounded-3xl border border-sand-200 shadow-sm space-y-5 scroll-mt-36">
                     <div>
                         <h3 class="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-2">
                             <i class="fa-solid fa-layer-group text-brand-600"></i> Pilih Tipe Transaksi Kasir
@@ -184,7 +191,7 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-64 overflow-y-auto pr-1" id="frameContainer">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[45vh] lg:max-h-64 overflow-y-auto pr-1 overscroll-contain" id="frameContainer">
                             @foreach($products as $index => $prod)
                                 <label class="frame-item p-3 rounded-2xl border border-sand-200 hover:border-brand-400 flex items-center gap-3 cursor-pointer transition-all hover:bg-sand-50 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50/70 has-[:checked]:ring-1 has-[:checked]:ring-brand-500"
                                     data-search="{{ strtolower(trim(($prod->barcode ?? '') . ' ' . $prod->name . ' ' . $prod->brand . ' ' . $prod->frame_shape)) }}">
@@ -220,7 +227,7 @@
                         </div>
                         <div>
                             <label class="font-bold text-slate-700 block mb-1">Harga Frame Custom (Rp) <span class="text-rose-500">*</span></label>
-                            <input type="number" name="custom_frame_price" id="customFramePrice" placeholder="0" min="0" class="w-full px-3 py-2 bg-white border border-purple-300 rounded-xl font-extrabold text-sm text-purple-900">
+                            <input type="number" inputmode="numeric" name="custom_frame_price" id="customFramePrice" placeholder="0" min="0" class="w-full px-3 py-2 bg-white border border-purple-300 rounded-xl font-extrabold text-sm text-purple-900">
                             <span class="text-[10px] text-slate-500 mt-1 block">Kasir bebas menentukan harga frame di tempat transaksi.</span>
                         </div>
                     </div>
@@ -291,7 +298,7 @@
                             <label class="text-[11px] font-bold text-slate-700">Custom / Nego Harga Lensa (Opsional):</label>
                             <span class="text-[10px] text-slate-400">Isi jika kasir memberi diskon atau harga khusus</span>
                         </div>
-                        <input type="number" name="custom_lens_price" id="customLensPrice" placeholder="Kosongkan jika memakai tarif standar di atas" min="0" class="w-full mt-1 px-3 py-2 bg-sand-50 border border-sand-300 rounded-xl text-xs font-bold text-slate-800">
+                        <input type="number" inputmode="numeric" name="custom_lens_price" id="customLensPrice" placeholder="Kosongkan jika memakai tarif standar di atas" min="0" class="w-full mt-1 px-3 py-2 bg-sand-50 border border-sand-300 rounded-xl text-xs font-bold text-slate-800">
                     </div>
 
                     <!-- Toggle Resep Mata -->
@@ -375,7 +382,7 @@
                             </div>
                             <div>
                                 <label class="font-bold text-slate-700 block mb-1">Biaya Jasa (Rp)</label>
-                                <input type="number" name="service_fee" id="serviceFeeInput" placeholder="0" min="0" class="w-full px-3 py-2 bg-white border border-sand-300 rounded-xl font-bold text-slate-900">
+                                <input type="number" inputmode="numeric" name="service_fee" id="serviceFeeInput" placeholder="0" min="0" class="w-full px-3 py-2 bg-white border border-sand-300 rounded-xl font-bold text-slate-900">
                             </div>
                         </div>
                     </div>
@@ -386,7 +393,7 @@
             <!-- Right Side: Billing Kasir & Voucher & Cetak Struk (5 Kolom) -->
             <div class="lg:col-span-5 space-y-6 lg:sticky lg:top-28">
                 
-                <div id="posStepBilling" class="bg-white p-6 rounded-3xl border border-sand-200 shadow-xl space-y-6 scroll-mt-36">
+                <div id="posStepBilling" class="bg-white p-4 sm:p-6 rounded-3xl border border-sand-200 shadow-xl space-y-6 scroll-mt-36">
                     <div class="flex items-center justify-between pb-4 border-b border-sand-200">
                         <div>
                             <span class="text-[10px] font-bold text-brand-600 uppercase tracking-widest">{{ $storeName }}</span>
@@ -492,7 +499,7 @@
                                     <button type="button" id="btnDp30" class="px-2 py-0.5 bg-amber-200 hover:bg-amber-300 text-amber-900 rounded font-bold text-[9px]">DP 30%</button>
                                 </div>
                             </div>
-                            <input type="number" name="dp_amount_input" id="dpAmountInput" placeholder="0" min="0" class="w-full px-3 py-2 bg-white border border-amber-300 rounded-xl font-extrabold text-sm text-amber-900">
+                            <input type="number" inputmode="numeric" name="dp_amount_input" id="dpAmountInput" placeholder="0" min="0" class="w-full px-3 py-3.5 sm:py-2 bg-white border border-amber-300 rounded-xl font-extrabold text-base sm:text-sm text-amber-900">
                             <div class="flex justify-between items-center text-[10px] text-amber-800 font-semibold pt-1 border-t border-amber-200">
                                 <span>Sisa Tagihan Pelunasan:</span>
                                 <span class="font-bold text-xs text-rose-700" id="lblRemainingBalance">Rp 0</span>
@@ -514,16 +521,16 @@
                                 <label class="font-bold text-slate-700">Nominal Diterima Kasir (Rp)</label>
                                 <button type="button" id="btnUangPas" class="text-[10px] font-bold text-brand-600 hover:underline">Uang Pas</button>
                             </div>
-                            <input type="number" name="amount_paid" id="amountPaidInput" required class="w-full px-4 py-2.5 bg-sand-50 border border-sand-300 rounded-xl font-extrabold text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:bg-white" placeholder="0">
+                            <input type="number" inputmode="numeric" name="amount_paid" id="amountPaidInput" required class="w-full px-4 py-3.5 sm:py-2.5 bg-sand-50 border border-sand-300 rounded-xl font-extrabold text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:bg-white" placeholder="0">
                         </div>
 
                         <!-- Shortcut Cepat Pecahan Uang -->
                         <div class="flex flex-wrap gap-1.5 pt-1">
-                            <button type="button" class="quick-cash px-2.5 py-1 bg-sand-100 hover:bg-sand-200 text-slate-700 rounded-lg font-bold text-[10px]" data-val="50000">50rb</button>
-                            <button type="button" class="quick-cash px-2.5 py-1 bg-sand-100 hover:bg-sand-200 text-slate-700 rounded-lg font-bold text-[10px]" data-val="100000">100rb</button>
-                            <button type="button" class="quick-cash px-2.5 py-1 bg-sand-100 hover:bg-sand-200 text-slate-700 rounded-lg font-bold text-[10px]" data-val="200000">200rb</button>
-                            <button type="button" class="quick-cash px-2.5 py-1 bg-sand-100 hover:bg-sand-200 text-slate-700 rounded-lg font-bold text-[10px]" data-val="500000">500rb</button>
-                            <button type="button" class="quick-cash px-2.5 py-1 bg-sand-100 hover:bg-sand-200 text-slate-700 rounded-lg font-bold text-[10px]" data-val="1000000">1jt</button>
+                            <button type="button" class="quick-cash px-3.5 py-2 bg-sand-100 hover:bg-sand-200 text-slate-700 rounded-xl font-bold text-[11px]" data-val="50000">50rb</button>
+                            <button type="button" class="quick-cash px-3.5 py-2 bg-sand-100 hover:bg-sand-200 text-slate-700 rounded-xl font-bold text-[11px]" data-val="100000">100rb</button>
+                            <button type="button" class="quick-cash px-3.5 py-2 bg-sand-100 hover:bg-sand-200 text-slate-700 rounded-xl font-bold text-[11px]" data-val="200000">200rb</button>
+                            <button type="button" class="quick-cash px-3.5 py-2 bg-sand-100 hover:bg-sand-200 text-slate-700 rounded-xl font-bold text-[11px]" data-val="500000">500rb</button>
+                            <button type="button" class="quick-cash px-3.5 py-2 bg-sand-100 hover:bg-sand-200 text-slate-700 rounded-xl font-bold text-[11px]" data-val="1000000">1jt</button>
                         </div>
 
                         <!-- Kembalian -->
@@ -537,6 +544,19 @@
                     <button type="submit" class="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-sm font-bold shadow-lg shadow-emerald-600/25 transition-all hover:scale-[1.02] flex items-center justify-center gap-2">
                         <i class="fa-solid fa-print"></i> Proses Transaksi & Cetak / WA Struk
                     </button>
+
+                    <!-- Bar Bayar Sticky (HP / Tablet) -->
+                    <div id="posStickyPay" class="fixed bottom-14 sm:bottom-0 left-0 right-0 z-40 lg:hidden px-3 pb-3 pt-2.5 bg-white/95 backdrop-blur-md border-t border-sand-200 shadow-[0_-8px_24px_rgba(15,23,42,0.10)] rounded-t-2xl">
+                        <div class="flex items-center justify-between gap-3 max-w-3xl mx-auto">
+                            <div class="min-w-0">
+                                <span class="text-[9px] font-bold text-slate-400 uppercase block leading-none mb-0.5">Total Tagihan</span>
+                                <span class="text-lg font-extrabold text-slate-900 block truncate" id="billGrandTotalBar">Rp 0</span>
+                            </div>
+                            <button type="submit" form="posForm" class="shrink-0 px-5 py-3 bg-emerald-600 active:bg-emerald-700 text-white rounded-2xl text-sm font-bold shadow-lg shadow-emerald-600/30 flex items-center gap-2">
+                                <i class="fa-solid fa-circle-check"></i> Bayar & Cetak
+                            </button>
+                        </div>
+                    </div>
 
                 </div>
 
@@ -742,6 +762,7 @@
 
         currentGrandTotal = Math.max(0, subtotal - currentDiscount + (parseFloat(posShippingCost.value) || 0));
         billGrandTotal.textContent = formatRupiah(currentGrandTotal);
+        const _bar = document.getElementById('billGrandTotalBar'); if (_bar) _bar.textContent = formatRupiah(currentGrandTotal);
 
         updateDpCalculation();
     }
@@ -875,6 +896,7 @@
 
         currentGrandTotal = Math.max(0, subtotal - currentDiscount);
         billGrandTotal.textContent = formatRupiah(currentGrandTotal);
+        const _bar = document.getElementById('billGrandTotalBar'); if (_bar) _bar.textContent = formatRupiah(currentGrandTotal);
         updateDpCalculation();
     }
 
@@ -926,6 +948,7 @@
         const subtotalCalc = currentFramePrice + currentLensPrice + currentServiceFee;
         currentGrandTotal = Math.max(0, subtotalCalc - currentDiscount);
         billGrandTotal.textContent = formatRupiah(currentGrandTotal);
+        const _bar = document.getElementById('billGrandTotalBar'); if (_bar) _bar.textContent = formatRupiah(currentGrandTotal);
         updateChange();
     }
 
