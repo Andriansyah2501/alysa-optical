@@ -98,6 +98,7 @@
                 @csrf
 
                 @foreach($settings as $st)
+                    @continue($st->key === 'pos_enabled_roles')
                     <div class="{{ in_array($st->key, ['store_bio', 'receipt_footer_notes', 'store_address']) ? 'md:col-span-2' : '' }}">
                         <label class="font-bold text-slate-800 block mb-1">
                             {{ $st->label }} <span class="text-[10px] text-slate-400 font-mono">({{ $st->key }})</span>
@@ -114,6 +115,34 @@
                         @endif
                     </div>
                 @endforeach
+
+                <!-- Kontrol Akses Transaksi Kasir (POS) -->
+                @php
+                    $posAllowed = array_filter(array_map('trim', explode(',', (string) ($globalSettings['pos_enabled_roles'] ?? 'cashier'))));
+                @endphp
+                <div class="md:col-span-2 p-5 bg-indigo-50/60 rounded-2xl border-2 border-indigo-200 space-y-3">
+                    <div class="flex items-start gap-3">
+                        <i class="fa-solid fa-user-lock text-indigo-600 text-xl mt-0.5"></i>
+                        <div>
+                            <span class="font-extrabold text-slate-800 text-sm block">Kontrol Akses Transaksi Kasir (POS)</span>
+                            <p class="text-[11px] text-slate-600 mt-0.5 leading-relaxed">
+                                Centang role staf yang <strong>boleh membuka modul transaksi kasir</strong>. Yang tidak dicentang tidak akan melihat tombol “Kasir” dan akses <code class="font-mono bg-white px-1 rounded">/pos</code> otomatis ditolak.
+                                <strong>Admin & Super Admin selalu bisa</strong> sebagai pemilik toko. Pelanggan/umum memang tidak pernah punya akses POS — mereka hanya bisa melihat struk pesanan miliknya.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-3 pl-9">
+                        @foreach(['cashier' => 'Cashier (Kasir)', 'optician' => 'Optician (Lab Refraksi)'] as $roleKey => $roleLabel)
+                            <label class="inline-flex items-center gap-2 px-3.5 py-2 bg-white rounded-xl border border-indigo-200 cursor-pointer hover:border-indigo-400 transition-colors">
+                                <input type="checkbox" name="pos_enabled_roles[]" value="{{ $roleKey }}" class="w-4 h-4 accent-indigo-600" {{ in_array($roleKey, $posAllowed, true) ? 'checked' : '' }}>
+                                <span class="text-xs font-bold text-slate-700">{{ $roleLabel }}</span>
+                            </label>
+                        @endforeach
+                        <span class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-50 text-emerald-800 rounded-xl border border-emerald-200 text-xs font-bold">
+                            <i class="fa-solid fa-crown text-[10px]"></i> Admin & Super Admin: selalu aktif
+                        </span>
+                    </div>
+                </div>
 
                 <div class="md:col-span-2 pt-3 border-t border-sand-200 flex justify-end">
                     <button type="submit" class="px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-bold shadow-md transition-all flex items-center gap-2">

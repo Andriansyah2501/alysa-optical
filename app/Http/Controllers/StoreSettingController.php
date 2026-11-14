@@ -38,6 +38,17 @@ class StoreSettingController extends Controller
     {
         $data = $request->except(['_token']);
 
+        // Checkbox role POS: array -> CSV; tidak ada yang dicentang -> 'cashier' default aman (admin/super_admin tetap selalu bisa)
+        if ($request->has('pos_enabled_roles')) {
+            $roles = array_intersect(
+                (array) $request->input('pos_enabled_roles', []),
+                ['cashier', 'optician']
+            );
+            $data['pos_enabled_roles'] = implode(',', $roles);
+        } else {
+            $data['pos_enabled_roles'] = '';
+        }
+
         foreach ($data as $key => $value) {
             StoreSetting::set($key, $value);
         }

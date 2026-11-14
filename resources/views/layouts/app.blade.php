@@ -181,8 +181,8 @@
                 <div class="flex items-center gap-2">
                     
                     @auth
-                        <!-- Tombol Cepat POS Kasir -->
-                        @if(in_array(Auth::user()->role, ['cashier', 'admin', 'super_admin']))
+                        <!-- Tombol Cepat POS Kasir (hanya role yang diizinkan di Pengaturan) -->
+                        @if(Auth::user()->canAccessPos())
                             <a href="{{ route('pos.index') }}" class="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-bold shadow-xs transition-all">
                                 <i class="fa-solid fa-cash-register text-[10px]"></i>
                                 <span class="hidden sm:inline">Kasir</span>

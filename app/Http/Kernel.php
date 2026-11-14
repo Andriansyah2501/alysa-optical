@@ -37,6 +37,7 @@ class Kernel extends HttpKernel
         'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
         'can' => \Illuminate\Auth\Middleware\Authorize::class,
         'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
+        'pos.access' => \App\Http\Middleware\PosAccess::class,
         'role' => \App\Http\Middleware\RoleCheck::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
     ];

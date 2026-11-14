@@ -45,4 +45,22 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    /**
+     * Apakah user boleh membuka modul transaksi kasir (POS)?
+     * Satu sumber kebenaran untuk middleware PosAccess & tombol menu di layout.
+     */
+    public function canAccessPos(): bool
+    {
+        if (in_array($this->role, ['super_admin', 'admin'], true)) {
+            return true;
+        }
+
+        $allowed = array_filter(array_map(
+            'trim',
+            explode(',', (string) StoreSetting::get('pos_enabled_roles', 'cashier'))
+        ));
+
+        return in_array($this->role, $allowed, true);
+    }
 }

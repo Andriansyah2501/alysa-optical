@@ -35,7 +35,7 @@ Route::get('/lacak-pesanan', [GlassesShopController::class, 'track'])->name('sho
 Route::get('/kalender-promo', [PromoCalendarController::class, 'publicIndex'])->name('shop.calendar');
 
 // Rute Kasir POS (Akses: Cashier & Admin)
-Route::middleware(['auth', 'role:cashier,admin'])->group(function () {
+Route::middleware(['auth', 'pos.access'])->group(function () {
     Route::get('/pos', [PosController::class, 'index'])->name('pos.index');
     Route::post('/pos/bayar', [PosController::class, 'store'])->name('pos.store');
     Route::post('/pos/pelunasan/{id}', [PosController::class, 'settlePayment'])->name('pos.settle');
