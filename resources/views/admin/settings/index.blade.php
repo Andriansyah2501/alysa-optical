@@ -332,8 +332,8 @@
                     <p class="text-xs text-slate-500 mt-1">Kirim otomatis notifikasi invoice pembelian, rincian resep kacamata, dan link tracking ke WhatsApp pelanggan saat order dibuat atau status lab diperbarui.</p>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span class="px-3 py-1 bg-emerald-50 text-emerald-800 rounded-full text-xs font-bold border border-emerald-200 flex items-center gap-1.5">
-                        <i class="fa-solid fa-circle text-[8px] text-emerald-500 animate-pulse"></i> n8n Engine Active (Port 5678)
+                    <span id="waEngineBadge" class="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-bold border border-slate-200 flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle-question text-[10px]"></i> Cek koneksi WhatsApp...
                     </span>
                 </div>
             </div>
@@ -350,9 +350,14 @@
                                 </span>
                                 <p class="text-xs text-slate-600 mt-1">Cukup klik tombol di bawah untuk membuat barcode aktif, lalu langsung scan menggunakan HP Anda.</p>
                             </div>
-                            <button type="button" onclick="buatQrSekarang()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-2xl text-xs font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer">
-                                <i class="fa-solid fa-qrcode text-sm"></i> KLIK UNTUK GENERATE BARCODE
-                            </button>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <button type="button" id="btnCekWa" onclick="cekStatusWa(true)" class="px-4 py-2.5 bg-white hover:bg-sand-50 text-slate-700 rounded-2xl text-xs font-bold transition-all shadow-sm border border-sand-300 flex items-center gap-2 cursor-pointer">
+                                    <i class="fa-solid fa-link text-sm text-emerald-600"></i> Cek Koneksi WA
+                                </button>
+                                <button type="button" onclick="buatQrSekarang()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-2xl text-xs font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer">
+                                    <i class="fa-solid fa-qrcode text-sm"></i> KLIK UNTUK GENERATE BARCODE
+                                </button>
+                            </div>
                         </div>
                         
                         <div class="flex flex-col sm:flex-row items-center gap-8 pt-3 bg-white p-5 rounded-2xl border border-emerald-200">
@@ -743,32 +748,89 @@
 
 
 <script>
+// ===== Panel WhatsApp: status real-time + generate QR berulang =====
+const WA_STATUS_URL = "{{ route('admin.settings.wa_status') }}";
+const WA_QR_URL = "{{ route('admin.settings.wa_qr') }}";
+const WA_RESTART_URL = "{{ route('admin.settings.wa_restart') }}";
+let waPollTimer = null;
+
+function waBadge(status, connected) {
+    const b = document.getElementById('waEngineBadge');
+    if (!b) return;
+    const map = {
+        'WORKING':      ['bg-emerald-50 text-emerald-800 border-emerald-200', '<i class="fa-solid fa-circle-check text-[11px]"></i> WhatsApp Sudah Terhubung'],
+        'SCAN_QR_CODE': ['bg-amber-50 text-amber-800 border-amber-200', '<i class="fa-solid fa-qrcode text-[11px]"></i> Menunggu Scan Barcode'],
+        'STARTING':     ['bg-sky-50 text-sky-800 border-sky-200', '<i class="fa-solid fa-spinner fa-spin text-[11px]"></i> Engine Menyalakan Sesi...'],
+        'STOPPED':      ['bg-slate-100 text-slate-600 border-slate-200', '<i class="fa-regular fa-circle text-[11px]"></i> Sesi Mati — Klik Generate'],
+        'FAILED':       ['bg-rose-50 text-rose-800 border-rose-200', '<i class="fa-solid fa-triangle-exclamation text-[11px]"></i> Sesi Gagal — Klik Generate Ulang'],
+        'OFFLINE':      ['bg-rose-50 text-rose-800 border-rose-200', '<i class="fa-solid fa-plug-circle-xmark text-[11px]"></i> WAHA Engine Offline'],
+    };
+    const [cls, html] = map[status] || ['bg-slate-100 text-slate-600 border-slate-200', '<i class="fa-solid fa-circle-question text-[10px]"></i> Status: ' + status];
+    b.className = 'px-3 py-1 rounded-full text-xs font-bold border flex items-center gap-1.5 transition-colors ' + cls;
+    b.innerHTML = html;
+}
+
+function cekStatusWa(silent) {
+    return fetch(WA_STATUS_URL, { headers: { 'Accept': 'application/json' } })
+        .then(r => r.json())
+        .then(d => {
+            waBadge(d.status, d.connected);
+            const statusText = document.getElementById('waConnectStatus');
+            if (statusText) {
+                if (d.connected) {
+                    const who = d.me && d.me.pushName ? ' (' + d.me.pushName + ')' : '';
+                    statusText.innerHTML = 'Status: <span class="text-emerald-700 font-bold"><i class="fa-solid fa-circle-check mr-1"></i>SUDAH TERHUBUNG' + who + '</span>';
+                    const ph = document.getElementById('waQrPlaceholder');
+                    if (ph) ph.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-600 text-4xl mb-2"></i><span class="text-xs font-bold text-emerald-700">WhatsApp toko sudah tersambung.<br>Tidak perlu scan lagi.</span>';
+                } else if (d.status === 'SCAN_QR_CODE') {
+                    statusText.innerHTML = 'Status: <span class="text-amber-600 font-bold animate-pulse">Barcode aktif — segera scan dari HP!</span>';
+                } else {
+                    statusText.innerHTML = 'Status: <span class="text-slate-500 font-bold">' + d.status.replace(/_/g, ' ') + '</span>';
+                }
+            }
+            // otomatis berhenti polling kalau sudah WORKING
+            if (d.connected && waPollTimer) { clearInterval(waPollTimer); waPollTimer = null; }
+            return d;
+        })
+        .catch(() => { if (!silent) waBadge('OFFLINE'); });
+}
+
 function buatQrSekarang() {
     const placeholder = document.getElementById('waQrPlaceholder');
     const img = document.getElementById('waQrImage');
     const statusText = document.getElementById('waConnectStatus');
 
     if (placeholder) {
+        placeholder.classList.remove('hidden');
         placeholder.innerHTML = '<i class="fa-solid fa-arrows-rotate fa-spin text-emerald-600 text-3xl mb-2"></i><span class="text-xs font-bold text-slate-700">Sedang membuat barcode aktif...</span>';
     }
+    if (statusText) statusText.innerHTML = 'Status: <span class="text-sky-600 font-bold">Merestart sesi & menunggu QR...</span>';
 
-    // Panggil restart sesi agar mendapatkan barcode segar
-    fetch("{{ route('admin.settings.wa_restart') }}", {
+    fetch(WA_RESTART_URL, {
         method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Accept': 'application/json'
-        }
-    }).finally(() => {
-        setTimeout(() => {
-            if (img) {
-                img.src = "{{ route('admin.settings.wa_qr') }}?t=" + new Date().getTime();
-                img.onload = function() {
-                    if (placeholder) placeholder.classList.add('hidden');
-                    if (statusText) statusText.innerHTML = 'Status: <span class="text-emerald-700 font-bold animate-pulse">Barcode Aktif - Segera Scan Sekarang!</span>';
-                };
+        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }
+    })
+        .then(r => r.json())
+        .then(d => {
+            if (d.status === 'WORKING') {
+                if (placeholder) placeholder.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-600 text-4xl mb-2"></i><span class="text-xs font-bold text-emerald-700">Sudah tersambung — tidak perlu scan.</span>';
+            } else if (d.status === 'SCAN_QR_CODE' && img) {
+                img.src = WA_QR_URL + '?t=' + new Date().getTime();
+                img.onload = () => { if (placeholder) placeholder.classList.add('hidden'); };
             }
-        }, 1500);
-    });
+            if (statusText && d.message) {
+                statusText.innerHTML = 'Status: <span class="' + (d.ok ? 'text-emerald-700' : 'text-rose-600') + ' font-bold">' + d.message + '</span>';
+            }
+            cekStatusWa(true);
+        })
+        .catch(() => {
+            if (statusText) statusText.innerHTML = 'Status: <span class="text-rose-600 font-bold">Gagal menghubungi server — coba lagi.</span>';
+        });
 }
+
+// jalan otomatis saat halaman dibuka + polling tiap 6 detik saat belum terhubung
+document.addEventListener('DOMContentLoaded', () => {
+    cekStatusWa(true);
+    waPollTimer = setInterval(() => cekStatusWa(true), 6000);
+});
 </script>

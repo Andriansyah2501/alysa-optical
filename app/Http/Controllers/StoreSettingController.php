@@ -15,14 +15,13 @@ class StoreSettingController extends Controller
 {
     public function index()
     {
-        // Auto-refresh barcode QR WhatsApp dari engine lokal
+        // Simpan barcode QR WhatsApp segar HANYA saat sesi menunggu scan
         try {
-            $qrPath = public_path('uploads/whatsapp_qr.png');
-            $wahaQr = @file_get_contents('http://127.0.0.1:3008/api/default/auth/qr', false, stream_context_create([
-                'http' => ['header' => "X-Api-Key: alysa2026\r\n", 'timeout' => 2]
-            ]));
-            if ($wahaQr && strlen($wahaQr) > 100) {
-                file_put_contents($qrPath, $wahaQr);
+            if ($this->wahaSessionStatus() === 'SCAN_QR_CODE') {
+                $qr = $this->wahaRequest('GET', '/api/default/auth/qr', 4);
+                if ($qr && strlen($qr) > 100) {
+                    file_put_contents(public_path('uploads/whatsapp_qr.png'), $qr);
+                }
             }
         } catch (\Throwable $e) {}
 
@@ -236,80 +235,164 @@ class StoreSettingController extends Controller
         return back()->with('success', "Kode voucher '{$vCode}' telah dihapus.");
     }
 
+    // =========================================
+    // 4. INTEGRASI WHATSAPP (WAHA ENGINE)
+    // =========================================
+
+    private const WAHA_BASE = 'http://127.0.0.1:3008';
+    private const WAHA_KEY = 'alysa2026';
+
     /**
-     * Stream Live Barcode QR WhatsApp dari WAHA Engine
+     * Helper HTTP ke WAHA; ignore_errors agar body 4xx/5xx tetap terbaca.
+     * Return [httpCode, body] — tidak pernah melempar exception.
      */
-    public function streamWaQr()
+    private function wahaHttp(string $method, string $path, int $timeout = 4, array $payload = null): array
     {
-        try {
-            // Cek status sesi
-            $statusResp = @file_get_contents('http://127.0.0.1:3008/api/sessions', false, stream_context_create([
-                'http' => ['header' => "X-Api-Key: alysa2026\r\n", 'timeout' => 2]
-            ]));
-            $sessions = json_decode($statusResp ?: '[]', true);
-            $default = null;
-            foreach ($sessions as $s) {
-                if ($s['name'] === 'default') {
-                    $default = $s;
-                    break;
-                }
+        $headers = ["X-Api-Key: " . self::WAHA_KEY];
+        $options = ['http' => [
+            'method' => $method,
+            'header' => implode("\r\n", $headers) . "\r\n",
+            'timeout' => $timeout,
+            'ignore_errors' => true,
+        ]];
+        if ($payload !== null) {
+            $options['http']['header'] .= "Content-Type: application/json\r\n";
+            $options['http']['content'] = json_encode($payload);
+        }
+        $body = @file_get_contents(self::WAHA_BASE . $path, false, stream_context_create($options));
+
+        $code = 0;
+        foreach ($http_response_header ?? [] as $h) {
+            if (preg_match('#^HTTP/\S+\s(\d{3})#', $h, $m)) {
+                $code = (int) $m[1];
             }
+        }
 
-            if (!$default || in_array($default['status'] ?? '', ['STOPPED', 'FAILED'])) {
-                // Stop dulu jika FAILED agar bisa clean start
-                @file_get_contents('http://127.0.0.1:3008/api/sessions/stop', false, stream_context_create([
-                    'http' => [
-                        'method' => 'POST',
-                        'header' => "X-Api-Key: alysa2026\r\nContent-Type: application/json\r\n",
-                        'content' => json_encode(['name' => 'default']),
-                        'timeout' => 2
-                    ]
-                ]));
-                // Start ulang sesi agar QR baru selalu aktif dan valid
-                @file_get_contents('http://127.0.0.1:3008/api/sessions/start', false, stream_context_create([
-                    'http' => [
-                        'method' => 'POST',
-                        'header' => "X-Api-Key: alysa2026\r\nContent-Type: application/json\r\n",
-                        'content' => json_encode(['name' => 'default']),
-                        'timeout' => 2
-                    ]
-                ]));
-                sleep(2);
-            }
+        return [$code, $body ?: ''];
+    }
 
-            // Ambil QR Code PNG segar
-            $qrData = @file_get_contents('http://127.0.0.1:3008/api/default/auth/qr', false, stream_context_create([
-                'http' => ['header' => "X-Api-Key: alysa2026\r\n", 'timeout' => 3]
-            ]));
-
-            if ($qrData && strlen($qrData) > 100) {
-                return response($qrData, 200)->header('Content-Type', 'image/png')->header('Cache-Control', 'no-cache, no-store, must-revalidate');
-            }
-        } catch (\Throwable $e) {}
-
-        // Fallback jika sudah terhubung (WORKING)
-        return response()->file(public_path('uploads/whatsapp_qr.png'));
+    /** Status sesi default: WORKING / SCAN_QR_CODE / STARTING / STOPPED / FAILED / OFFLINE */
+    private function wahaSessionStatus(): string
+    {
+        [$code, $body] = $this->wahaHttp('GET', '/api/sessions/default', 3);
+        if ($code !== 200) {
+            return $code === 0 ? 'OFFLINE' : 'UNKNOWN';
+        }
+        $data = json_decode($body, true);
+        return (string) ($data['status'] ?? 'UNKNOWN');
     }
 
     /**
-     * Restart Sesi WAHA secara Manual
+     * Hentikan lalu jalankan ulang sesi dan tunggu sampai QR siap.
+     * Dipakai tombol Generate — bisa berkali-kali, tidak hanya sekali.
+     */
+    private function wahaRestartAndWait(): string
+    {
+        $status = $this->wahaSessionStatus();
+        if ($status === 'WORKING') {
+            return 'WORKING'; // jangan ganggu sesi yang sudah tersambung
+        }
+
+        // Stop (abaikan hasil — normal jika sudah STOPPED/FAILED)
+        $this->wahaHttp('POST', '/api/sessions/stop', 4, ['name' => 'default']);
+        usleep(700000);
+
+        // Start — jika ditolak (mis. status STARTING), tunggu sedikit lalu coba lagi
+        [$code] = $this->wahaHttp('POST', '/api/sessions/start', 6, ['name' => 'default']);
+        if ($code >= 400) {
+            sleep(3);
+            $this->wahaHttp('POST', '/api/sessions/start', 6, ['name' => 'default']);
+        }
+
+        // Poll sampai SCAN_QR_CODE / WORKING (maks ±18 detik)
+        for ($i = 0; $i < 9; $i++) {
+            sleep(2);
+            $status = $this->wahaSessionStatus();
+            if (in_array($status, ['SCAN_QR_CODE', 'WORKING'], true)) {
+                return $status;
+            }
+        }
+
+        return $status;
+    }
+
+    /**
+     * JSON status WA — dipakai tombol/panel "Sudah Terhubung".
+     */
+    public function waStatus()
+    {
+        $status = $this->wahaSessionStatus();
+
+        $me = null;
+        if ($status === 'WORKING') {
+            [$code, $body] = $this->wahaHttp('GET', '/api/sessions/default', 3);
+            $data = json_decode($body, true);
+            $me = [
+                'id' => $data['me']['id'] ?? null,
+                'pushName' => $data['me']['pushName'] ?? null,
+            ];
+        }
+
+        return response()->json([
+            'status' => $status,
+            'connected' => $status === 'WORKING',
+            'me' => $me,
+            'at' => now()->toIso8601String(),
+        ])->header('Cache-Control', 'no-cache, no-store, must-revalidate');
+    }
+
+    /**
+     * Stream Barcode QR WhatsApp dari WAHA Engine (validasi magic bytes PNG).
+     */
+    public function streamWaQr()
+    {
+        $status = $this->wahaSessionStatus();
+
+        // Jika sesi mati total, bangkitkan dulu
+        if (in_array($status, ['STOPPED', 'FAILED', 'UNKNOWN', 'OFFLINE'], true)) {
+            $status = $this->wahaRestartAndWait();
+        }
+
+        if ($status === 'SCAN_QR_CODE') {
+            [$code, $qrData] = $this->wahaHttp('GET', '/api/default/auth/qr', 5);
+            if ($code === 200 && strlen($qrData) > 100 && str_starts_with($qrData, "\x89PNG")) {
+                return response($qrData, 200)
+                    ->header('Content-Type', 'image/png')
+                    ->header('Cache-Control', 'no-cache, no-store, must-revalidate');
+            }
+        }
+
+        // Sudah WORKING / belum siap: sajikan snapshot terakhir bila ada
+        $qrPath = public_path('uploads/whatsapp_qr.png');
+        if (is_file($qrPath)) {
+            return response()->file($qrPath, [
+                'Cache-Control' => 'no-cache, no-store, must-revalidate',
+            ]);
+        }
+
+        return response()->json(['message' => 'QR belum tersedia', 'status' => $status], 503);
+    }
+
+    /**
+     * Restart Sesi WAHA secara manual (tombol Generate) — mengembalikan JSON.
      */
     public function restartWaSession()
     {
-        try {
-            @file_get_contents('http://127.0.0.1:3008/api/sessions/start', false, stream_context_create([
-                'http' => [
-                    'method' => 'POST',
-                    'header' => "X-Api-Key: alysa2026\r\nContent-Type: application/json\r\n",
-                    'content' => json_encode(['name' => 'default']),
-                    'timeout' => 3
-                ]
-            ]));
-            sleep(2);
-            return redirect()->back()->with('success', 'Sesi WhatsApp berhasil direfresh. Silakan scan barcode baru!');
-        } catch (\Throwable $e) {
-            return redirect()->back()->with('error', 'Gagal me-refresh sesi: ' . $e->getMessage());
+        $status = $this->wahaRestartAndWait();
+
+        $messages = [
+            'SCAN_QR_CODE' => ['success', 'Barcode aktif siap discan. Silakan scan sekarang!'],
+            'WORKING' => ['success', 'WhatsApp sudah tersambung — tidak perlu scan lagi.'],
+            'STARTING' => ['error', 'Engine masih menyala, coba klik Generate lagi 5 detik lagi.'],
+            'OFFLINE' => ['error', 'WAHA engine tidak merespons — hubungi admin server.'],
+        ];
+        [$type, $msg] = $messages[$status] ?? ['error', 'Sesi gagal di-refresh (status: ' . $status . ').'];
+
+        if (request()->expectsJson()) {
+            return response()->json(['ok' => $type === 'success', 'status' => $status, 'message' => $msg]);
         }
+
+        return back()->with($type, $msg);
     }
 
 }

@@ -111,6 +111,7 @@ Route::middleware(['auth', 'role:admin,optician'])->prefix('admin')->group(funct
     Route::middleware('role:admin,super_admin')->group(function() {
         Route::get('/pengaturan', [StoreSettingController::class, 'index'])->name('admin.settings.index');
         Route::get('/pengaturan/wa-qr-stream', [StoreSettingController::class, 'streamWaQr'])->name('admin.settings.wa_qr');
+        Route::get('/pengaturan/wa-status', [StoreSettingController::class, 'waStatus'])->name('admin.settings.wa_status');
         Route::post('/pengaturan/wa-restart-session', [StoreSettingController::class, 'restartWaSession'])->name('admin.settings.wa_restart');
         Route::post('/pengaturan', [StoreSettingController::class, 'updateSettings'])->name('admin.settings.update');
 
