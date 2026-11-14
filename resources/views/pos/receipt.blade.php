@@ -265,6 +265,7 @@
 
     <div class="main-wrapper">
         
+        @if (auth()->check() && auth()->user()->canAccessPos())
         <div class="action-card">
             <h3><i class="fa-solid fa-bolt text-brand-600"></i> Aksi Transaksi Kasir</h3>
             <div class="btn-group">
@@ -333,6 +334,7 @@
                 </div>
             @endif
         </div>
+        @endif
 
         <div class="receipt-container" id="printableReceipt">
             <div class="text-center">
