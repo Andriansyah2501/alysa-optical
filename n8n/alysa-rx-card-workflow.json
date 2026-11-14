@@ -1,0 +1,223 @@
+[
+ {
+  "updatedAt": "2026-11-14T17:21:21.000Z",
+  "createdAt": "2026-11-14T16:46:53.666Z",
+  "id": "LCDzAwC0IGrqWIbo",
+  "name": "Alysa Optical - Kartu Resep WA Otomatis",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+   {
+    "parameters": {
+     "httpMethod": "POST",
+     "path": "alysa-rx-card",
+     "options": {},
+     "responseMode": "responseNode"
+    },
+    "id": "rx-hook-1",
+    "name": "Webhook Kartu Resep",
+    "type": "n8n-nodes-base.webhook",
+    "typeVersion": 2,
+    "position": [
+     240,
+     300
+    ],
+    "webhookId": "alysa-rx-card"
+   },
+   {
+    "parameters": {
+     "method": "POST",
+     "url": "http://192.168.0.30:3008/api/sendText",
+     "sendHeaders": true,
+     "headerParameters": {
+      "parameters": [
+       {
+        "name": "X-Api-Key",
+        "value": "alysa2026"
+       },
+       {
+        "name": "Content-Type",
+        "value": "application/json"
+       }
+      ]
+     },
+     "sendBody": true,
+     "bodyParameters": {
+      "parameters": [
+       {
+        "name": "session",
+        "value": "default"
+       },
+       {
+        "name": "chatId",
+        "value": "={{ $json.body.customer_phone }}@c.us"
+       },
+       {
+        "name": "text",
+        "value": "={{ $json.body.message_text }}"
+       }
+      ]
+     },
+     "options": {}
+    },
+    "id": "rx-send-text",
+    "name": "Kirim Teks Resep ke WA Pasien",
+    "type": "n8n-nodes-base.httpRequest",
+    "typeVersion": 4.2,
+    "position": [
+     480,
+     300
+    ]
+   },
+   {
+    "parameters": {
+     "method": "POST",
+     "url": "http://192.168.0.30:3008/api/sendFile",
+     "sendHeaders": true,
+     "headerParameters": {
+      "parameters": [
+       {
+        "name": "X-Api-Key",
+        "value": "alysa2026"
+       },
+       {
+        "name": "Content-Type",
+        "value": "application/json"
+       }
+      ]
+     },
+     "sendBody": true,
+     "specifyBody": "json",
+     "jsonBody": "={{ $json.payload }}",
+     "options": {
+      "allowUnauthorizedCerts": true
+     }
+    },
+    "id": "rx-send-pdf",
+    "name": "Kirim Lampiran PDF Resep",
+    "type": "n8n-nodes-base.httpRequest",
+    "typeVersion": 4.2,
+    "position": [
+     720,
+     300
+    ],
+    "continueOnFail": true
+   },
+   {
+    "parameters": {
+     "respondWith": "json",
+     "responseBody": "={{ { \"ok\": true, \"event\": $('Webhook Kartu Resep').item.json.body.event, \"to\": $('Webhook Kartu Resep').item.json.body.customer_phone } }}",
+     "options": {
+      "responseCode": 200
+     }
+    },
+    "id": "rx-reply",
+    "name": "Balas OK ke Laravel",
+    "type": "n8n-nodes-base.respondToWebhook",
+    "typeVersion": 1.1,
+    "position": [
+     960,
+     300
+    ]
+   },
+   {
+    "parameters": {
+     "jsCode": "const b = $('Webhook Kartu Resep').first().json.body;\nreturn [{ json: { payload: {\n  session: 'default',\n  chatId: b.customer_phone + '@c.us',\n  file: {\n    url: b.download_url || b.pdf_url,\n    fileName: 'Kartu_Resep_' + b.card_code + '.pdf',\n    caption: 'Kartu Resep PDF - ' + b.card_code\n  }\n} } }];"
+    },
+    "id": "rx-code-pdf-body",
+    "name": "Susun Body PDF",
+    "type": "n8n-nodes-base.code",
+    "typeVersion": 2,
+    "position": [
+     560,
+     300
+    ],
+    "continueOnFail": true
+   }
+  ],
+  "connections": {
+   "Webhook Kartu Resep": {
+    "main": [
+     [
+      {
+       "node": "Kirim Teks Resep ke WA Pasien",
+       "type": "main",
+       "index": 0
+      }
+     ]
+    ]
+   },
+   "Kirim Teks Resep ke WA Pasien": {
+    "main": [
+     [
+      {
+       "node": "Susun Body PDF",
+       "type": "main",
+       "index": 0
+      }
+     ]
+    ]
+   },
+   "Kirim Lampiran PDF Resep": {
+    "main": [
+     [
+      {
+       "node": "Balas OK ke Laravel",
+       "type": "main",
+       "index": 0
+      }
+     ]
+    ]
+   },
+   "Susun Body PDF": {
+    "main": [
+     [
+      {
+       "node": "Kirim Lampiran PDF Resep",
+       "type": "main",
+       "index": 0
+      }
+     ]
+    ]
+   }
+  },
+  "settings": {
+   "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "nodeGroups": [],
+  "pinData": null,
+  "versionId": "e23a1f2c-7555-4c2c-bb22-5e1f1d9c1f2d",
+  "activeVersionId": "e23a1f2c-7555-4c2c-bb22-5e1f1d9c1f2d",
+  "versionCounter": 2,
+  "triggerCount": 1,
+  "sourceWorkflowId": null,
+  "tags": [],
+  "shared": [
+   {
+    "updatedAt": "2026-11-14T16:46:53.689Z",
+    "createdAt": "2026-11-14T16:46:53.689Z",
+    "role": "workflow:owner",
+    "workflowId": "LCDzAwC0IGrqWIbo",
+    "projectId": "LkKDTygmQMYwPNV3",
+    "project": {
+     "updatedAt": "2026-11-01T22:38:40.611Z",
+     "createdAt": "2026-11-01T21:17:59.736Z",
+     "id": "LkKDTygmQMYwPNV3",
+     "name": "andrian syah <ian122110@gmail.com>",
+     "type": "personal",
+     "icon": null,
+     "description": null,
+     "customTelemetryTags": [],
+     "creatorId": "1cee7598-707e-4135-a138-ffb416878bf5"
+    }
+   }
+  ],
+  "versionMetadata": {
+   "name": null,
+   "description": null
+  }
+ }
+]
