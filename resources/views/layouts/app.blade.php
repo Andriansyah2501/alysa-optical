@@ -433,6 +433,12 @@
             <span>Lacak</span>
         </a>
         @auth
+            @if(Auth::user()->canAccessPos())
+                <a href="{{ route('pos.index') }}" class="flex flex-col items-center gap-1 text-[10px] font-bold {{ request()->routeIs('pos.*') ? 'text-emerald-600' : 'text-slate-500 hover:text-slate-800' }}">
+                    <i class="fa-solid fa-cash-register text-base"></i>
+                    <span>Kasir</span>
+                </a>
+            @endif
             <a href="{{ route('admin.dashboard') }}" class="flex flex-col items-center gap-1 text-[10px] font-bold text-emerald-600">
                 <i class="fa-solid fa-user-gear text-base"></i>
                 <span>Admin</span>

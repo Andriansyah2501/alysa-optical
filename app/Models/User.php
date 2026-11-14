@@ -52,15 +52,6 @@ class User extends Authenticatable
      */
     public function canAccessPos(): bool
     {
-        if (in_array($this->role, ['super_admin', 'admin'], true)) {
-            return true;
-        }
-
-        $allowed = array_filter(array_map(
-            'trim',
-            explode(',', (string) StoreSetting::get('pos_enabled_roles', 'cashier'))
-        ));
-
-        return in_array($this->role, $allowed, true);
+        return in_array($this->role, \App\Http\Middleware\PosAccess::allowedRoles(), true);
     }
 }

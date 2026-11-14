@@ -31,6 +31,22 @@
         </div>
     </div>
 
+    <!-- Pintu Cepat Kasir (Step Bar) -->
+    <div class="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] font-bold">
+        <button type="button" onclick="posGoStep('posStepPelanggan')" class="pos-step-btn flex items-center justify-center gap-2 px-3 py-3 rounded-2xl bg-brand-600 text-white shadow-sm transition-all" data-step="posStepPelanggan">
+            <span class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[10px]">1</span> Pelanggan
+        </button>
+        <button type="button" onclick="posGoStep('posStepTransaksi')" class="pos-step-btn flex items-center justify-center gap-2 px-3 py-3 rounded-2xl bg-white text-slate-700 border border-sand-300 hover:bg-sand-50 transition-all" data-step="posStepTransaksi">
+            <span class="w-5 h-5 rounded-full bg-sand-100 flex items-center justify-center text-[10px]">2</span> Tipe & Barang
+        </button>
+        <button type="button" onclick="posGoStep('sectionLens')" class="pos-step-btn flex items-center justify-center gap-2 px-3 py-3 rounded-2xl bg-white text-slate-700 border border-sand-300 hover:bg-sand-50 transition-all" data-step="sectionLens">
+            <span class="w-5 h-5 rounded-full bg-sand-100 flex items-center justify-center text-[10px]">3</span> Lensa & Resep
+        </button>
+        <button type="button" onclick="posGoStep('posStepBilling')" class="pos-step-btn flex items-center justify-center gap-2 px-3 py-3 rounded-2xl bg-white text-slate-700 border border-sand-300 hover:bg-sand-50 transition-all" data-step="posStepBilling">
+            <span class="w-5 h-5 rounded-full bg-sand-100 flex items-center justify-center text-[10px]">4</span> Bayar & Struk
+        </button>
+    </div>
+
     <!-- Layout Form POS -->
     <form action="{{ route('pos.store') }}" method="POST" id="posForm" class="mt-8">
         @csrf
@@ -42,7 +58,7 @@
             <div class="lg:col-span-7 space-y-6">
                 
                 <!-- 1. Identitas Pelanggan Toko -->
-                <div class="bg-white p-6 rounded-3xl border border-sand-200 shadow-sm space-y-4">
+                <div id="posStepPelanggan" class="bg-white p-6 rounded-3xl border border-sand-200 shadow-sm space-y-4 scroll-mt-36">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-sand-200">
                         <h3 class="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-2">
                             <i class="fa-solid fa-user text-brand-600"></i> Identitas Pelanggan & Rekam Medis
@@ -102,7 +118,7 @@
                 </div>
 
                 <!-- 2. PILIHAN TIPE TRANSAKSI (Tab Navigasi Mode) -->
-                <div class="bg-white p-6 rounded-3xl border border-sand-200 shadow-sm space-y-5">
+                <div id="posStepTransaksi" class="bg-white p-6 rounded-3xl border border-sand-200 shadow-sm space-y-5 scroll-mt-36">
                     <div>
                         <h3 class="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-2">
                             <i class="fa-solid fa-layer-group text-brand-600"></i> Pilih Tipe Transaksi Kasir
@@ -357,7 +373,7 @@
             <!-- Right Side: Billing Kasir & Voucher & Cetak Struk (5 Kolom) -->
             <div class="lg:col-span-5 space-y-6 lg:sticky lg:top-28">
                 
-                <div class="bg-white p-6 rounded-3xl border border-sand-200 shadow-xl space-y-6">
+                <div id="posStepBilling" class="bg-white p-6 rounded-3xl border border-sand-200 shadow-xl space-y-6 scroll-mt-36">
                     <div class="flex items-center justify-between pb-4 border-b border-sand-200">
                         <div>
                             <span class="text-[10px] font-bold text-brand-600 uppercase tracking-widest">{{ $storeName }}</span>
@@ -1011,6 +1027,32 @@
                 }
             });
         }
+    </script>
+
+    <script>
+    // ===== Pintu Cepat Kasir: navigasi 4 langkah =====
+    function posGoStep(targetId) {
+        // Lensa & Resep hanya ada di mode tertentu — jika tersembunyi, arahkan ke pilihan tipe dulu
+        if (targetId === 'sectionLens') {
+            const lensSection = document.getElementById('sectionLens');
+            if (lensSection && lensSection.classList.contains('hidden')) {
+                targetId = 'posStepTransaksi';
+            }
+        }
+        const el = document.getElementById(targetId);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        // tandai tombol langkah aktif
+        document.querySelectorAll('.pos-step-btn').forEach(btn => {
+            const active = btn.dataset.step === targetId;
+            btn.classList.toggle('bg-brand-600', active);
+            btn.classList.toggle('text-white', active);
+            btn.classList.toggle('border-transparent', active);
+            btn.classList.toggle('bg-white', !active);
+            btn.classList.toggle('text-slate-700', !active);
+            btn.classList.toggle('border-sand-300', !active);
+        });
+    }
     </script>
 
 @endsection
