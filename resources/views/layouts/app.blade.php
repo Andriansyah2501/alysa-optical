@@ -116,15 +116,17 @@
 </head>
 <body class="min-h-screen flex flex-col selection:bg-brand-200 selection:text-brand-900">
 
-    <!-- Top Announcement Bar (Editable by Super Admin) -->
-    @if(($globalSettings['header_announcement_enabled'] ?? '1') !== '0')
-        <div class="bg-gradient-to-r from-brand-600 via-brand-500 to-amber-600 text-white text-[10px] font-semibold tracking-wide py-1 px-3 text-center">
-            <span class="inline-flex items-center gap-2">
-                <i class="fa-solid fa-sparkles text-amber-200"></i>
-                {!! $globalSettings['header_announcement'] ?? '<strong>PROMO HARI INI:</strong> Gratis Ongkir Seluruh Indonesia + Free Hardcase Kulit & Lap Pembersih Lensa' !!}
-            </span>
-        </div>
-    @endif
+    <!-- Top Announcement Bar (Editable by Super Admin) — hanya utk pengunjung/toko -->
+    @guest
+        @if(($globalSettings['header_announcement_enabled'] ?? '1') !== '0')
+            <div class="bg-gradient-to-r from-brand-600 via-brand-500 to-amber-600 text-white text-[10px] font-semibold tracking-wide py-1 px-3 text-center">
+                <span class="inline-flex items-center gap-2">
+                    <i class="fa-solid fa-sparkles text-amber-200"></i>
+                    {!! $globalSettings['header_announcement'] ?? '<strong>PROMO HARI INI:</strong> Gratis Ongkir Seluruh Indonesia + Free Hardcase Kulit & Lap Pembersih Lensa' !!}
+                </span>
+            </div>
+        @endif
+    @endguest
 
     <!-- Main Navigation Bar -->
     <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-sand-200/80 transition-all shadow-sm">
@@ -149,7 +151,8 @@
                         </div>
                     </a>
 
-                    <!-- Nav Link Kategori (Dikecilkan) -->
+                    <!-- Nav Link Kategori TOKO — hanya utk pengunjung/pelanggan (staf tidak melihatnya) -->
+                    @guest
                     <nav class="hidden md:flex items-center gap-4 text-[11px] font-bold text-slate-700">
                         <a href="{{ route('shop.index') }}" class="hover:text-brand-600 transition-colors py-1 {{ request()->routeIs('shop.index') && !request('kategori') ? 'text-brand-600 border-b-2 border-brand-500' : '' }}">
                             Semua Frame
@@ -176,77 +179,99 @@
                             <i class="fa-regular fa-circle-info mr-0.5 text-brand-500"></i> Tentang
                         </a>
                     </nav>
+                    @endguest
                 </div>
 
                 <!-- Right Action Bar: Clean Dropdown Menu -->
+                @php
+                    $cleanPhone = preg_replace('/[^0-9]/', '', $globalSettings['store_phone'] ?? '087888883318');
+                    $waTarget = str_starts_with($cleanPhone, '0') ? '62' . substr($cleanPhone, 1) : $cleanPhone;
+                @endphp
                 <div class="flex items-center gap-2">
                     
                     @auth
-                        <!-- Tombol Cepat POS Kasir (hanya role yang diizinkan di Pengaturan) -->
-                        @if(Auth::user()->canAccessPos())
-                            <a href="{{ route('pos.index') }}" class="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-bold shadow-xs transition-all">
-                                <i class="fa-solid fa-cash-register text-[10px]"></i>
-                                <span class="hidden sm:inline">Kasir</span>
-                            </a>
-                        @endif
+                        @php $stafCanPos = Auth::user()->canAccessPos(); $stafCanAdm = Auth::user()->canAccessAdminArea(); @endphp
 
-                        <!-- Menu Dropdown Manajemen Staf / Admin -->
-                        <div class="relative inline-block text-left" id="adminDropdownContainer">
-                            <button type="button" onclick="document.getElementById('adminDropdownMenu').classList.toggle('hidden')" class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-sand-100 hover:bg-sand-200 text-slate-800 rounded-lg text-[11px] font-bold border border-sand-300 transition-colors">
-                                <i class="fa-solid fa-user-tie text-brand-600 text-xs"></i>
-                                <span>Menu Admin</span>
-                                <i class="fa-solid fa-chevron-down text-[9px] text-slate-400 ml-0.5"></i>
-                            </button>
+                        @if($stafCanAdm)
+                            <!-- OWNER / ADMIN / OPTICIAN: dropdown kerja ringkas -->
+                            <div class="relative inline-block text-left" id="adminDropdownContainer">
+                                <button type="button" onclick="document.getElementById('adminDropdownMenu').classList.toggle('hidden')" class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-sand-100 hover:bg-sand-200 text-slate-800 rounded-lg text-[11px] font-bold border border-sand-300 transition-colors">
+                                    <i class="fa-solid fa-user-tie text-brand-600 text-xs"></i>
+                                    <span>Menu Kerja</span>
+                                    <i class="fa-solid fa-chevron-down text-[9px] text-slate-400 ml-0.5"></i>
+                                </button>
 
-                            <div id="adminDropdownMenu" class="hidden absolute right-0 mt-1.5 w-52 bg-white rounded-xl shadow-xl border border-sand-200 z-50 py-1 divide-y divide-sand-100 text-xs">
-                                <div class="px-3 py-2 bg-sand-50/60">
-                                    <div class="font-bold text-slate-900 truncate">{{ Auth::user()->name }}</div>
-                                    <div class="text-[10px] text-brand-600 font-semibold uppercase tracking-wider">{{ Auth::user()->role }}</div>
-                                </div>
-                                <div class="py-1">
-                                    <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2 px-3 py-1.5 text-slate-700 hover:bg-brand-50 hover:text-brand-700 font-medium transition-colors">
-                                        <i class="fa-solid fa-glasses text-brand-500 w-4"></i> Lab Optik & Antrean
-                                    </a>
-                                    <a href="{{ route('admin.reports.index') }}" class="flex items-center gap-2 px-3 py-1.5 text-slate-700 hover:bg-brand-50 hover:text-brand-700 font-medium transition-colors">
-                                        <i class="fa-solid fa-chart-line text-sky-500 w-4"></i> Laporan & Grafik Omset
-                                    </a>
-                                    <a href="{{ route('admin.calendar.index') }}" class="flex items-center gap-2 px-3 py-1.5 text-slate-700 hover:bg-brand-50 hover:text-brand-700 font-medium transition-colors">
-                                        <i class="fa-solid fa-calendar-days text-amber-500 w-4"></i> Kelola Kalender Promo
-                                    </a>
-                                    <a href="{{ route('admin.customers.index') }}" class="flex items-center gap-2 px-3 py-1.5 text-slate-700 hover:bg-brand-50 hover:text-brand-700 font-medium transition-colors">
-                                        <i class="fa-solid fa-users text-emerald-600 w-4"></i> Database Pelanggan & Resep
-                                    </a>
-                                    <a href="{{ route('admin.expenses.index') }}" class="flex items-center gap-2 px-3 py-1.5 text-slate-700 hover:bg-brand-50 hover:text-brand-700 font-medium transition-colors">
-                                        <i class="fa-solid fa-money-bill-transfer text-rose-500 w-4"></i> Belanja Modal & Cashflow
-                                    </a>
-                                    @if(in_array(Auth::user()->role, ['admin', 'super_admin']))
-                                        <a href="{{ route('admin.katalog.index') }}" class="flex items-center gap-2 px-3 py-1.5 text-slate-700 hover:bg-brand-50 hover:text-brand-700 font-medium transition-colors">
-                                            <i class="fa-solid fa-boxes-stacked text-purple-500 w-4"></i> Katalog Kacamata
+                                <div id="adminDropdownMenu" class="hidden absolute right-0 mt-1.5 w-52 bg-white rounded-xl shadow-xl border border-sand-200 z-50 py-1 divide-y divide-sand-100 text-xs">
+                                    <div class="px-3 py-2 bg-sand-50/60">
+                                        <div class="font-bold text-slate-900 truncate">{{ Auth::user()->name }}</div>
+                                        <div class="text-[10px] text-brand-600 font-semibold uppercase tracking-wider">{{ str_replace('_',' ',Auth::user()->role) }}</div>
+                                    </div>
+                                    <div class="py-1">
+                                        @if($stafCanPos)
+                                        <a href="{{ route('pos.index') }}" class="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 text-emerald-700 font-bold transition-colors">
+                                            <i class="fa-solid fa-cash-register text-emerald-600 w-4"></i> Buka Kasir (POS)
                                         </a>
-                                        <a href="{{ route('admin.settings.index') }}" class="flex items-center gap-2 px-3 py-1.5 text-slate-700 hover:bg-brand-50 hover:text-brand-700 font-medium transition-colors">
-                                            <i class="fa-solid fa-gear text-slate-500 w-4"></i> Pengaturan Toko
+                                        @endif
+                                        <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2 px-3 py-1.5 text-slate-700 hover:bg-brand-50 hover:text-brand-700 font-medium transition-colors">
+                                            <i class="fa-solid fa-gauge-high text-brand-500 w-4"></i> Dashboard
                                         </a>
-                                        <a href="{{ route('admin.backups.index') }}" class="flex items-center gap-2 px-3 py-1.5 text-slate-700 hover:bg-brand-50 hover:text-brand-700 font-medium transition-colors">
-                                            <i class="fa-solid fa-cloud-arrow-down text-purple-600 w-4"></i> Cadangan Data & Database
+                                        <a href="{{ route('admin.reports.index') }}" class="flex items-center gap-2 px-3 py-1.5 text-slate-700 hover:bg-brand-50 hover:text-brand-700 font-medium transition-colors">
+                                            <i class="fa-solid fa-chart-line text-sky-500 w-4"></i> Laporan Omset
                                         </a>
-                                        <a href="{{ route('admin.server.index') }}" class="flex items-center gap-2 px-3 py-1.5 text-slate-700 hover:bg-brand-50 hover:text-brand-700 font-medium transition-colors">
-                                            <i class="fa-solid fa-server text-sky-600 w-4"></i> Status Server & Jaringan
+                                        <a href="{{ route('admin.customers.index') }}" class="flex items-center gap-2 px-3 py-1.5 text-slate-700 hover:bg-brand-50 hover:text-brand-700 font-medium transition-colors">
+                                            <i class="fa-solid fa-users text-emerald-600 w-4"></i> Pelanggan & Resep
                                         </a>
-                                        <a href="{{ route('admin.tunnel.index') }}" class="flex items-center gap-2 px-3 py-1.5 text-slate-700 hover:bg-brand-50 hover:text-brand-700 font-medium transition-colors">
-                                            <i class="fa-solid fa-tower-broadcast text-amber-600 w-4"></i> Manajemen Tunneling
+                                        @if(in_array(Auth::user()->role, ['admin', 'super_admin']))
+                                            <a href="{{ route('admin.katalog.index') }}" class="flex items-center gap-2 px-3 py-1.5 text-slate-700 hover:bg-brand-50 hover:text-brand-700 font-medium transition-colors">
+                                                <i class="fa-solid fa-boxes-stacked text-purple-500 w-4"></i> Katalog & Barcode
+                                            </a>
+                                            <a href="{{ route('admin.expenses.index') }}" class="flex items-center gap-2 px-3 py-1.5 text-slate-700 hover:bg-brand-50 hover:text-brand-700 font-medium transition-colors">
+                                                <i class="fa-solid fa-money-bill-transfer text-rose-500 w-4"></i> Cashflow Toko
+                                            </a>
+                                            <a href="{{ route('admin.calendar.index') }}" class="flex items-center gap-2 px-3 py-1.5 text-slate-700 hover:bg-brand-50 hover:text-brand-700 font-medium transition-colors">
+                                                <i class="fa-solid fa-calendar-days text-amber-500 w-4"></i> Kalender Promo
+                                            </a>
+                                            <a href="{{ route('admin.settings.index') }}" class="flex items-center gap-2 px-3 py-1.5 text-slate-700 hover:bg-brand-50 hover:text-brand-700 font-medium transition-colors">
+                                                <i class="fa-solid fa-gear text-slate-500 w-4"></i> Pengaturan Toko
+                                            </a>
+                                            <a href="{{ route('admin.backups.index') }}" class="flex items-center gap-2 px-3 py-1.5 text-slate-700 hover:bg-brand-50 hover:text-brand-700 font-medium transition-colors">
+                                                <i class="fa-solid fa-cloud-arrow-down text-purple-600 w-4"></i> Cadangan Data
+                                            </a>
+                                            <a href="{{ route('admin.server.index') }}" class="flex items-center gap-2 px-3 py-1.5 text-slate-700 hover:bg-brand-50 hover:text-brand-700 font-medium transition-colors">
+                                                <i class="fa-solid fa-server text-sky-600 w-4"></i> Status Server
+                                            </a>
+                                            <a href="{{ route('admin.tunnel.index') }}" class="flex items-center gap-2 px-3 py-1.5 text-slate-700 hover:bg-brand-50 hover:text-brand-700 font-medium transition-colors">
+                                                <i class="fa-solid fa-tower-broadcast text-amber-600 w-4"></i> Tunneling
+                                            </a>
+                                        @endif
+                                    </div>
+                                    <div class="py-1">
+                                        <a href="{{ route('shop.index') }}" class="flex items-center gap-2 px-3 py-1.5 text-slate-500 hover:bg-sand-50 font-medium transition-colors">
+                                            <i class="fa-solid fa-store text-slate-400 w-4"></i> Lihat Tampilan Toko
                                         </a>
-                                    @endif
-                                </div>
-                                <div class="py-1">
-                                    <form action="{{ route('logout') }}" method="POST" class="w-full">
-                                        @csrf
-                                        <button type="submit" class="w-full text-left flex items-center gap-2 px-3 py-1.5 text-rose-600 hover:bg-rose-50 font-bold transition-colors">
-                                            <i class="fa-solid fa-power-off text-rose-500 w-4"></i> Keluar (Logout)
-                                        </button>
-                                    </form>
+                                        <form action="{{ route('logout') }}" method="POST" class="w-full">
+                                            @csrf
+                                            <button type="submit" class="w-full text-left flex items-center gap-2 px-3 py-1.5 text-rose-600 hover:bg-rose-50 font-bold transition-colors">
+                                                <i class="fa-solid fa-power-off text-rose-500 w-4"></i> Keluar
+                                            </button>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        @else
+                            <!-- KASIR: hanya tombol Kerja + Keluar — tanpa menu admin -->
+                            @if($stafCanPos)
+                                <a href="{{ route('pos.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-bold shadow-xs transition-all">
+                                    <i class="fa-solid fa-cash-register text-[11px]"></i> Kerja Kasir
+                                </a>
+                            @endif
+                            <form action="{{ route('logout') }}" method="POST">
+                                @csrf
+                                <button type="submit" class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white hover:bg-rose-50 text-slate-500 hover:text-rose-600 rounded-lg text-[11px] font-bold border border-sand-300 transition-colors" title="Keluar">
+                                    <i class="fa-solid fa-power-off"></i>
+                                </button>
+                            </form>
+                        @endif
 
                     @else
                         <!-- Jika Pengunjung Belum Login -->
@@ -256,20 +281,19 @@
                         </a>
                     @endauth
 
-                    @php
-                        $cleanPhone = preg_replace('/[^0-9]/', '', $globalSettings['store_phone'] ?? '087888883318');
-                        $waTarget = str_starts_with($cleanPhone, '0') ? '62' . substr($cleanPhone, 1) : $cleanPhone;
-                    @endphp
-                    <a href="https://wa.me/{{ $waTarget }}?text=Halo%20Alysa%20Glasses" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-lg text-[11px] font-bold border border-emerald-200 transition-colors">
+                    @guest
+                    <a href="https://wa.me/{{ $waTarget ?? '' }}?text=Halo%20Alysa%20Glasses" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-lg text-[11px] font-bold border border-emerald-200 transition-colors">
                         <i class="fa-brands fa-whatsapp text-emerald-600 text-xs"></i>
                         <span>WA</span>
                     </a>
+                    @endguest
 
                 </div>
 
             </div>
         </div>
-            <!-- Mobile Sub-Navigation Bar (Horizontal Scrollable for Easy Touch) -->
+            @guest
+        <!-- Mobile Sub-Navigation Bar (Horizontal Scrollable for Easy Touch) -->
         <div class="md:hidden border-t border-sand-100 bg-sand-50/80 px-2 py-1 overflow-x-auto flex items-center gap-1.5 text-[10px] font-bold no-scrollbar">
             <a href="{{ route('shop.index') }}" class="whitespace-nowrap px-2 py-0.5 rounded-md {{ request()->routeIs('shop.index') && !request('kategori') ? 'bg-brand-600 text-white' : 'bg-white text-slate-700 border border-sand-200' }}">
                 <i class="fa-solid fa-glasses mr-0.5 text-[9px]"></i> Semua Frame
@@ -294,6 +318,7 @@
                 <i class="fa-brands fa-whatsapp mr-1 text-emerald-600"></i> WhatsApp
             </a>
         </div>
+        @endguest
     </header>
 
     <!-- Flash Alerts -->
@@ -319,6 +344,7 @@
 
     <!-- Footer Warm Light -->
     
+    @guest
     <!-- Saluran WhatsApp Promo 11.11 Banner -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 mb-8 relative z-20">
         <div class="bg-gradient-to-r from-emerald-800 via-teal-800 to-emerald-900 rounded-3xl p-6 sm:p-8 text-white shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6 border border-emerald-700/50">
@@ -410,9 +436,11 @@
             </div>
         </div>
     </footer>
+    @endguest
 
 
-    <!-- Mobile Floating Bottom Bar for Quick Actions (User Friendly Mobile Experience) -->
+    <!-- Bar Bawah Mobile: versi Pengunjung vs versi Staf -->
+    @guest
     <div class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-lg border-t border-sand-200 px-3 py-2 flex items-center justify-around shadow-[0_-4px_16px_rgba(0,0,0,0.06)]">
         <a href="{{ route('shop.index') }}" class="flex flex-col items-center gap-1 text-[10px] font-bold {{ request()->routeIs('shop.index') ? 'text-brand-600' : 'text-slate-500 hover:text-slate-800' }}">
             <i class="fa-solid fa-store text-base"></i>
@@ -433,24 +461,49 @@
             <i class="fa-solid fa-truck-fast text-base"></i>
             <span>Lacak</span>
         </a>
-        @auth
-            @if(Auth::user()->canAccessPos())
-                <a href="{{ route('pos.index') }}" class="flex flex-col items-center gap-1 text-[10px] font-bold {{ request()->routeIs('pos.*') ? 'text-emerald-600' : 'text-slate-500 hover:text-slate-800' }}">
-                    <i class="fa-solid fa-cash-register text-base"></i>
-                    <span>Kasir</span>
-                </a>
-            @endif
-            <a href="{{ route('admin.dashboard') }}" class="flex flex-col items-center gap-1 text-[10px] font-bold text-emerald-600">
-                <i class="fa-solid fa-user-gear text-base"></i>
-                <span>Admin</span>
-            </a>
-        @else
-            <a href="https://wa.me/{{ $waMobile }}?text=Halo%20Alysa%20Glasses" target="_blank" class="flex flex-col items-center gap-1 text-[10px] font-bold text-emerald-600">
-                <i class="fa-brands fa-whatsapp text-base"></i>
-                <span>Chat WA</span>
-            </a>
-        @endauth
+        <a href="https://wa.me/{{ $waMobile }}?text=Halo%20Alysa%20Glasses" target="_blank" class="flex flex-col items-center gap-1 text-[10px] font-bold text-emerald-600">
+            <i class="fa-brands fa-whatsapp text-base"></i>
+            <span>Chat WA</span>
+        </a>
+        <a href="{{ route('login') }}" class="flex flex-col items-center gap-1 text-[10px] font-bold {{ request()->routeIs('login') ? 'text-brand-600' : 'text-slate-500 hover:text-slate-800' }}">
+            <i class="fa-solid fa-lock text-base"></i>
+            <span>Login</span>
+        </a>
     </div>
+    @else
+    @php $stafPos = Auth::user()->canAccessPos(); $stafAdm = Auth::user()->canAccessAdminArea(); @endphp
+    <div class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-lg border-t border-sand-200 px-3 py-2 flex items-center justify-around shadow-[0_-4px_16px_rgba(0,0,0,0.06)]">
+        @if($stafPos)
+        <a href="{{ route('pos.index') }}" class="flex flex-col items-center gap-1 text-[10px] font-bold {{ request()->routeIs('pos.*') ? 'text-emerald-600' : 'text-slate-500' }}">
+            <i class="fa-solid fa-cash-register text-base"></i>
+            <span>Kasir</span>
+        </a>
+        @endif
+        @if($stafAdm)
+        <a href="{{ route('admin.dashboard') }}" class="flex flex-col items-center gap-1 text-[10px] font-bold {{ request()->routeIs('admin.dashboard') ? 'text-brand-600' : 'text-slate-500' }}">
+            <i class="fa-solid fa-gauge-high text-base"></i>
+            <span>Dashboard</span>
+        </a>
+        @if(in_array(Auth::user()->role, ['admin','super_admin']))
+        <a href="{{ route('admin.katalog.index') }}" class="flex flex-col items-center gap-1 text-[10px] font-bold {{ request()->routeIs('admin.katalog.*') ? 'text-brand-600' : 'text-slate-500' }}">
+            <i class="fa-solid fa-boxes-stacked text-base"></i>
+            <span>Katalog</span>
+        </a>
+        @endif
+        <a href="{{ route('shop.index') }}" class="flex flex-col items-center gap-1 text-[10px] font-bold text-slate-500">
+            <i class="fa-solid fa-store text-base"></i>
+            <span>Toko</span>
+        </a>
+        @endif
+        <form action="{{ route('logout') }}" method="POST" class="flex flex-col items-center gap-1">
+            @csrf
+            <button type="submit" class="text-[10px] font-bold text-rose-500 flex flex-col items-center gap-1">
+                <i class="fa-solid fa-power-off text-base"></i>
+                <span>Keluar</span>
+            </button>
+        </form>
+    </div>
+    @endguest
 
     <!-- Tambahkan padding bawah di body agar konten tidak tertutup bottom bar di mobile -->
     <div class="h-14 md:hidden"></div>

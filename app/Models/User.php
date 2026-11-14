@@ -54,4 +54,13 @@ class User extends Authenticatable
     {
         return in_array($this->role, \App\Http\Middleware\PosAccess::allowedRoles(), true);
     }
+
+    /**
+     * Boleh masuk area backoffice/dashboard (admin dashboard guarded: super_admin/admin/optician).
+     * Kasir murni tidak — mereka cukup modul POS.
+     */
+    public function canAccessAdminArea(): bool
+    {
+        return in_array($this->role, ['super_admin', 'admin', 'optician'], true);
+    }
 }
