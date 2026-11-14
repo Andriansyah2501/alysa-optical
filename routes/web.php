@@ -85,6 +85,7 @@ Route::middleware(['auth', 'role:admin,optician'])->prefix('admin')->group(funct
     // Buku Kas, Belanja Modal & Arus Kas (Cashflow Toko)
     Route::get('/pengeluaran', [ExpenseController::class, 'index'])->name('admin.expenses.index');
     Route::post('/pengeluaran', [ExpenseController::class, 'store'])->name('admin.expenses.store');
+    Route::put('/pengeluaran/modal/{order}/hpp', [ExpenseController::class, 'updateModalHpp'])->name('admin.expenses.modal.hpp');
     Route::delete('/pengeluaran/{id}', [ExpenseController::class, 'destroy'])->name('admin.expenses.destroy');
 
     

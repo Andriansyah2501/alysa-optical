@@ -7,6 +7,7 @@ use App\Models\Order;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class ExpenseController extends Controller
@@ -59,6 +60,36 @@ class ExpenseController extends Controller
             ->groupBy('category')
             ->get();
 
+        // 5. Analisis Keterkaitan Omset vs Belanja Modal (HPP)
+        $paidStatuses = ['PAID', 'LUNAS'];
+        $omsetBruto = (float) \App\Models\Order::whereDate('created_at', '>=', $startDate)
+            ->whereDate('created_at', '<=', $endDate)
+            ->whereIn(DB::raw('UPPER(payment_status)'), $paidStatuses)
+            ->sum('grand_total');
+        $hppTransaksi = (float) \App\Models\Order::whereDate('created_at', '>=', $startDate)
+            ->whereDate('created_at', '<=', $endDate)
+            ->whereIn(DB::raw('UPPER(payment_status)'), $paidStatuses)
+            ->sum('hpp_modal');
+        $labaKotor = $omsetBruto - $hppTransaksi;
+        $marginKotor = $omsetBruto > 0 ? ($labaKotor / $omsetBruto) * 100 : 0.0;
+        $capexPeriod = (float) Expense::whereDate('expense_date', '>=', $startDate)
+            ->whereDate('expense_date', '<=', $endDate)
+            ->where('category', 'Belanja Modal')
+            ->sum('amount');
+        $breakEvenPct = $omsetBruto > 0 ? ($capexPeriod / $omsetBruto) * 100 : 0.0;
+
+        // Transaksi Lunas utk koreksi HPP manual (tautan belanja modal -> struk)
+        $modalTransaksi = \App\Models\Order::whereDate('created_at', '>=', $startDate)
+            ->whereDate('created_at', '<=', $endDate)
+            ->whereIn(DB::raw('UPPER(payment_status)'), $paidStatuses)
+            ->orderByDesc('grand_total')
+            ->take(20)
+            ->get(['id', 'order_code', 'customer_name', 'grand_total', 'hpp_modal', 'created_at']);
+        $linkedExpenses = Expense::whereNotNull('linked_order_code')
+            ->whereDate('expense_date', '>=', $startDate)
+            ->whereDate('expense_date', '<=', $endDate)
+            ->pluck('amount', 'linked_order_code');
+
         return view('admin.expenses.index', compact(
             'expenses',
             'startDate',
@@ -67,7 +98,15 @@ class ExpenseController extends Controller
             'totalOmsetMasuk',
             'totalPengeluaran',
             'netCashflow',
-            'rekapKategori'
+            'rekapKategori',
+            'omsetBruto',
+            'hppTransaksi',
+            'labaKotor',
+            'marginKotor',
+            'capexPeriod',
+            'breakEvenPct',
+            'modalTransaksi',
+            'linkedExpenses'
         ));
     }
 
@@ -84,6 +123,7 @@ class ExpenseController extends Controller
             'payment_source' => 'required|string|max:100',
             'notes' => 'nullable|string',
             'receipt_photo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:3072',
+            'linked_order_code' => 'nullable|string|max:40',
         ]);
 
         $photoPath = null;
@@ -103,12 +143,30 @@ class ExpenseController extends Controller
             'title' => $validated['title'],
             'amount' => $validated['amount'],
             'payment_source' => $validated['payment_source'],
+            'linked_order_code' => !empty($validated['linked_order_code']) ? trim($validated['linked_order_code']) : null,
             'receipt_photo' => $photoPath,
             'notes' => $validated['notes'] ?? null,
             'user_id' => Auth::id(),
         ]);
 
         return redirect()->route('admin.expenses.index')->with('success', "Pengeluaran {$validated['title']} (Rp " . number_format($validated['amount'], 0, ',', '.') . ") berhasil dicatat ke pembukuan!");
+    }
+
+    /**
+     * Koreksi HPP modal satu transaksi POS (menautkan belanja modal ke struk).
+     * Omset transaksi tsb dianggap = modal belanja + laba (hpp_modal <= grand_total).
+     */
+    public function updateModalHpp(Request $request, \App\Models\Order $order)
+    {
+        abort_unless(Auth::user()->canAccessAdminArea(), 403);
+        $validated = $request->validate([
+            'hpp_modal' => 'required|numeric|min:0',
+        ]);
+        $hpp = min((float) $validated['hpp_modal'], (float) $order->grand_total);
+        $order->update(['hpp_modal' => (int) round($hpp)]);
+
+        return back()->with('success', 'HPP modal transaksi ' . $order->order_code . ' dikoreksi: Rp ' . number_format($hpp, 0, ',', '.')
+            . ' (perkiraan laba: Rp ' . number_format($order->grand_total - $hpp, 0, ',', '.') . ')');
     }
 
     /**

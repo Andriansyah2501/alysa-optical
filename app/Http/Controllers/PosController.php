@@ -23,8 +23,9 @@ class PosController extends Controller
         $lensTypes = LensType::all();
         $customers = Customer::orderBy('name', 'asc')->get();
         $storeName = StoreSetting::get('store_name', 'ALYSA GLASSES');
-        
-        return view('pos.index', compact('products', 'lensTypes', 'customers', 'storeName'));
+        $bundleDiscountPercent = max(0, min(90, (float) StoreSetting::get('bundle_discount_percent', '10')));
+
+        return view('pos.index', compact('products', 'lensTypes', 'customers', 'storeName', 'bundleDiscountPercent'));
     }
 
     public function store(Request $request)
@@ -126,6 +127,17 @@ class PosController extends Controller
             $serviceName = trim($validated['service_name'] ?? 'Jasa Pasang / Servis Frame');
         }
 
+        // 3.2. PAKET BUNDLING: Frame Katalog + Lensa yang dipaketkan -> potongan % otomatis
+        $bundleDiscount = 0;
+        if ($request->filled('bundle_applied') && $mode === 'catalog' && $productModel) {
+            $bundleLensId = (int) ($productModel->bundle_lens_type_id ?? 0);
+            $chosenLensId = (int) ($validated['lens_type_id'] ?? 0);
+            if ($bundleLensId > 0 && $chosenLensId === $bundleLensId && $lensPrice > 0) {
+                $percent = max(0, min(90, (float) StoreSetting::get('bundle_discount_percent', '10')));
+                $bundleDiscount = round(($framePrice + $lensPrice) * $percent / 100);
+            }
+        }
+
         $subtotal = $framePrice;
         $totalBeforeDiscount = $subtotal + $lensPrice + $serviceFee;
 
@@ -147,6 +159,10 @@ class PosController extends Controller
         }
 
         $shippingCost = floatval($request->input('shipping_cost', 0));
+        $discountAmount = min($totalBeforeDiscount, $discountAmount + $bundleDiscount);
+        if ($bundleDiscount > 0 && !$appliedVoucherCode) {
+            $appliedVoucherCode = 'PAKET BUNDLING';
+        }
         $grandTotal = max(0, $totalBeforeDiscount - $discountAmount + $shippingCost);
 
         // 5. Logika Down Payment (DP) vs Full Payment
@@ -181,6 +197,14 @@ class PosController extends Controller
             $change = max(0, $amountPaid - $grandTotal);
         }
 
+        // 3.5. HPP modal (harga pokok belanja barang yang dijual) -> utk analisis omset vs belanja modal.
+        //      Estimasi awal = (100 / (100 + margin%)) x omset. Bisa dikoreksi manual lewat menu Belanja Modal (field linked_order_code).
+        $hppModal = null;
+        $marginPct = max(0, min(90, (float) StoreSetting::get('modal_profit_percent', '30')));
+        if ($marginPct > 0) {
+            $hppModal = (int) round($grandTotal * 100 / (100 + $marginPct));
+        }
+
         $orderCode = 'POS-' . date('Ymd') . '-' . strtoupper(Str::random(5));
 
         // Eksekusi Atomic Database Transaction
@@ -188,7 +212,7 @@ class PosController extends Controller
             $orderCode, $mode, $validated, $request, $lensTitle, $lensPrice, $serviceFee,
             $serviceName, $appliedVoucherCode, $discountAmount, $subtotal, $grandTotal,
             $paymentType, $dpAmount, $remainingBalance, $paymentStatus, $orderStatus,
-            $productModel, $itemType, $frameTitle, $framePrice, $shippingCost
+            $productModel, $itemType, $frameTitle, $framePrice, $shippingCost, $hppModal
         ) {
             // 6. Simpan Order
             $order = Order::create([
@@ -221,6 +245,7 @@ class PosController extends Controller
                 'payment_type' => $paymentType,
                 'dp_amount' => $dpAmount,
                 'remaining_balance' => $remainingBalance,
+                'hpp_modal' => $hppModal,
                 'payment_method' => $validated['payment_method'],
                 'payment_status' => $paymentStatus,
                 'order_status' => $orderStatus,

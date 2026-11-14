@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\LensType;
 use App\Services\BarcodeService;
 use Illuminate\Support\Str;
 
@@ -36,7 +37,8 @@ class ProductCatalogController extends Controller
     public function create()
     {
         $categories = Category::all();
-        return view('admin.catalog.create', compact('categories'));
+        $lensTypes = LensType::all();
+        return view('admin.catalog.create', compact('categories', 'lensTypes'));
     }
 
     public function store(Request $request)
@@ -57,6 +59,7 @@ class ProductCatalogController extends Controller
             'description' => 'required|string',
             'image_url' => 'nullable|url',
             'barcode' => 'nullable|string|max:32|unique:products,barcode',
+            'bundle_lens_type_id' => 'nullable|integer|exists:lens_types,id',
             'is_bestseller' => 'nullable|boolean',
             'is_new' => 'nullable|boolean',
         ]);
@@ -66,6 +69,7 @@ class ProductCatalogController extends Controller
         $data['image_url'] = $data['image_url'] ?: 'https://images.unsplash.com/photo-1591076482161-42ce6da69f67?auto=format&fit=crop&w=800&q=80';
         $data['is_bestseller'] = $request->has('is_bestseller');
         $data['is_new'] = $request->has('is_new');
+        $data['bundle_lens_type_id'] = !empty($data['bundle_lens_type_id']) ? (int) $data['bundle_lens_type_id'] : null;
         if (empty($data['barcode'])) {
             unset($data['barcode']); // biarkan model generate AG-##### otomatis
         } else {
@@ -80,7 +84,8 @@ class ProductCatalogController extends Controller
     public function edit(Product $product)
     {
         $categories = Category::all();
-        return view('admin.catalog.edit', compact('product', 'categories'));
+        $lensTypes = LensType::all();
+        return view('admin.catalog.edit', compact('product', 'categories', 'lensTypes'));
     }
 
     public function update(Request $request, Product $product)
@@ -101,10 +106,12 @@ class ProductCatalogController extends Controller
             'description' => 'required|string',
             'image_url' => 'nullable|url',
             'barcode' => 'nullable|string|max:32|unique:products,barcode,' . $product->id,
+            'bundle_lens_type_id' => 'nullable|integer|exists:lens_types,id',
         ]);
 
         $data['is_bestseller'] = $request->has('is_bestseller');
         $data['is_new'] = $request->has('is_new');
+        $data['bundle_lens_type_id'] = !empty($data['bundle_lens_type_id']) ? (int) $data['bundle_lens_type_id'] : null;
         $data['barcode'] = !empty($data['barcode'])
             ? strtoupper(trim($data['barcode']))
             : sprintf('AG-%05d', $product->id);

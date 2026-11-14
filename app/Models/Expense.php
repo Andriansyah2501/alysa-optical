@@ -16,6 +16,7 @@ class Expense extends Model
         'title',
         'amount',
         'payment_source',
+        'linked_order_code',
         'receipt_photo',
         'notes',
         'user_id',

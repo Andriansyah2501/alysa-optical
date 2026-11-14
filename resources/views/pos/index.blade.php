@@ -195,7 +195,7 @@
                             @foreach($products as $index => $prod)
                                 <label class="frame-item p-3 rounded-2xl border border-sand-200 hover:border-brand-400 flex items-center gap-3 cursor-pointer transition-all hover:bg-sand-50 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50/70 has-[:checked]:ring-1 has-[:checked]:ring-brand-500"
                                     data-search="{{ strtolower(trim(($prod->barcode ?? '') . ' ' . $prod->name . ' ' . $prod->brand . ' ' . $prod->frame_shape)) }}">
-                                    <input type="radio" name="product_id" value="{{ $prod->id }}" data-name="{{ $prod->name }}" data-barcode="{{ $prod->barcode }}" data-price="{{ $prod->effective_price }}" {{ $index === 0 ? 'checked' : '' }} class="text-brand-600 focus:ring-brand-500 shrink-0">
+                                    <input type="radio" name="product_id" value="{{ $prod->id }}" data-name="{{ $prod->name }}" data-barcode="{{ $prod->barcode }}" data-price="{{ $prod->effective_price }}" data-bundle="{{ $prod->bundle_lens_type_id }}" data-packagelabel="{{ $prod->bundleLabel($bundleDiscountPercent) }}" {{ $index === 0 ? 'checked' : '' }} class="text-brand-600 focus:ring-brand-500 shrink-0">
                                     <img src="{{ $prod->image_url }}" alt="{{ $prod->name }}" class="w-12 h-12 rounded-xl object-cover bg-white border border-sand-200 shrink-0">
                                     <div class="flex-1 min-w-0">
                                         <h4 class="font-bold text-xs text-slate-900 truncate">{{ $prod->name }}</h4>
@@ -204,6 +204,11 @@
                                             <span class="text-[9px] font-mono font-bold text-slate-400 block"><i class="fa-solid fa-barcode mr-0.5"></i>{{ $prod->barcode }}</span>
                                         @endif
                                         <span class="text-xs font-extrabold text-brand-700 block mt-0.5">Rp {{ number_format($prod->effective_price, 0, ',', '.') }}</span>
+                                        @if($prod->bundleLabel($bundleDiscountPercent))
+                                            <span class="frame-bundle-badge mt-1 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-violet-100 border border-violet-300 text-violet-800 text-[8.5px] font-extrabold">
+                                                <i class="fa-solid fa-box-open"></i> PAKET: {{ $prod->bundleLabel($bundleDiscountPercent) }}
+                                            </span>
+                                        @endif
                                     </div>
                                 </label>
                             @endforeach
@@ -277,11 +282,13 @@
                         </label>
 
                         @foreach($lensTypes as $idx => $lens)
-                            <label class="p-3 rounded-2xl border border-sand-200 hover:border-brand-400 flex items-center justify-between cursor-pointer transition-all hover:bg-sand-50 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50/70 has-[:checked]:ring-1 has-[:checked]:ring-brand-500 text-xs">
+                            <label data-lens-id="{{ $lens->id }}" class="lens-card p-3 rounded-2xl border border-sand-200 hover:border-brand-400 flex items-center justify-between cursor-pointer transition-all hover:bg-sand-50 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50/70 has-[:checked]:ring-1 has-[:checked]:ring-brand-500 text-xs">
                                 <div class="flex items-center gap-3">
                                     <input type="radio" name="lens_type_id" value="{{ $lens->id }}" data-name="{{ $lens->name }}" data-price="{{ $lens->additional_price }}" {{ $idx === 0 ? 'checked' : '' }} class="text-brand-600 focus:ring-brand-500 lens-radio">
                                     <div>
-                                        <span class="font-bold text-slate-900 block">{{ $lens->name }}</span>
+                                        <span class="font-bold text-slate-900 block">{{ $lens->name }}
+                                            <span data-lensprice="{{ $lens->additional_price }}" class="lens-bundle-hint hidden ml-1 px-1.5 py-0.5 rounded-full bg-violet-100 border border-violet-300 text-violet-800 text-[8px] font-extrabold align-middle"><i class="fa-solid fa-box-open mr-0.5"></i>PAKET -{{ $bundleDiscountPercent }}%<span data-pkgprice class="font-bold"></span></span>
+                                        </span>
                                         <span class="text-[10px] text-slate-500">{{ $lens->description }}</span>
                                     </div>
                                 </div>
@@ -402,6 +409,8 @@
                         <i class="fa-solid fa-receipt text-2xl text-slate-300"></i>
                     </div>
 
+                    <input type="hidden" name="bundle_applied" id="bundleAppliedInput" value="">
+
                     <!-- Voucher Kasir -->
                     <div class="p-3.5 bg-sand-50 rounded-2xl border border-sand-300 space-y-2">
                         <label class="text-[11px] font-bold text-slate-800 flex items-center gap-1.5">
@@ -451,7 +460,7 @@
                         </div>
 
                         <div class="flex justify-between text-emerald-700 font-bold" id="posRowDiscount" style="display: none;">
-                            <span>Potongan Diskon Voucher:</span>
+                            <span id="posRowDiscountLabel">Potongan Diskon Voucher:</span>
                             <span id="posBillDiscount">- Rp 0</span>
                         </div>
 
@@ -633,6 +642,10 @@
     let currentLensPrice = 0;
     let currentServiceFee = 0;
     let currentDiscount = 0;
+    const BUNDLE_PERCENT = {{ (int) $bundleDiscountPercent }};
+    let bundleActive = false;
+    let currentBundleDiscount = 0;
+    const bundleAppliedInput = document.getElementById('bundleAppliedInput');
     let currentGrandTotal = 0;
     let activeVoucherCode = '';
     let isReevaluatingVoucher = false;
@@ -663,6 +676,7 @@
             serviceFeeBox.classList.remove('hidden');
         }
 
+        updateBundleLensHint();
         calculateBilling();
     }
 
@@ -730,6 +744,15 @@
             }
         }
 
+        // 2.5. PAKET BUNDLING: frame katalog punya lensa paket & lensa itu dipilih (tanpa override harga)
+        const checkedFrameB = document.querySelector('input[name="product_id"]:checked');
+        const bundleLensId = (currentMode === 'catalog' && checkedFrameB) ? (checkedFrameB.getAttribute('data-bundle') || '') : '';
+        const checkedLensB = document.querySelector('input[name="lens_type_id"]:checked');
+        bundleActive = !!(BUNDLE_PERCENT > 0 && bundleLensId && checkedLensB && checkedLensB.value === bundleLensId && currentLensPrice > 0
+            && !(customLensPrice.value && parseFloat(customLensPrice.value) > 0));
+        currentBundleDiscount = bundleActive ? Math.round((currentFramePrice + currentLensPrice) * BUNDLE_PERCENT / 100) : 0;
+        bundleAppliedInput.value = bundleActive ? '1' : '';
+
         // 3. Hitung Biaya Jasa / Servis
         if (serviceFeeToggle.checked || currentMode === 'service_only') {
             currentServiceFee = parseFloat(serviceFeeInput.value) || 0;
@@ -754,13 +777,29 @@
 
         // 4. Grand Total & Re-evaluasi Voucher jika ada
         const subtotal = currentFramePrice + currentLensPrice + currentServiceFee;
+        // Baris diskon: voucher saja, paket saja, atau gabungan (paket tampil lebih dulu di label)
+        const totalShownDiscount = currentDiscount + currentBundleDiscount;
+        const lblDisc = document.getElementById('posRowDiscountLabel');
+        if (totalShownDiscount > 0) {
+            posRowDiscount.style.display = 'flex';
+            if (lblDisc) {
+                lblDisc.innerHTML = currentBundleDiscount > 0 && currentDiscount > 0
+                    ? 'Diskon Paket -' + BUNDLE_PERCENT + '% + Voucher:'
+                    : (currentBundleDiscount > 0
+                        ? '<i class="fa-solid fa-box-open text-violet-500"></i> Potongan Paket Bundling -' + BUNDLE_PERCENT + '%:'
+                        : 'Potongan Diskon Voucher:');
+            }
+            posBillDiscount.textContent = '- ' + formatRupiah(totalShownDiscount);
+        } else if (!activeVoucherCode) {
+            posRowDiscount.style.display = 'none';
+        }
         
         if (activeVoucherCode && isReevaluatingVoucher === false) {
             recheckActiveVoucher(subtotal);
             return;
         }
 
-        currentGrandTotal = Math.max(0, subtotal - currentDiscount + (parseFloat(posShippingCost.value) || 0));
+        currentGrandTotal = Math.max(0, subtotal - currentDiscount - currentBundleDiscount + (parseFloat(posShippingCost.value) || 0));
         billGrandTotal.textContent = formatRupiah(currentGrandTotal);
         const _bar = document.getElementById('billGrandTotalBar'); if (_bar) _bar.textContent = formatRupiah(currentGrandTotal);
 
@@ -847,7 +886,43 @@
     });
 
     // Event listeners input billing
-    frameRadios.forEach(r => r.addEventListener('change', calculateBilling));
+    function updateBundleLensHint() {
+        const frame = document.querySelector('input[name="product_id"]:checked');
+        const bundleId = frame ? (frame.getAttribute('data-bundle') || '') : '';
+        const framePrice = frame ? (parseFloat(frame.getAttribute('data-price')) || 0) : 0;
+        document.querySelectorAll('.lens-card').forEach(card => {
+            const isMatch = bundleId && card.getAttribute('data-lens-id') === bundleId;
+            card.classList.toggle('ring-2', isMatch);
+            card.classList.toggle('ring-violet-400', isMatch);
+            const hint = card.querySelector('.lens-bundle-hint');
+            if (hint) {
+                hint.classList.toggle('hidden', !isMatch);
+                if (isMatch) {
+                    const lensP = parseFloat(hint.getAttribute('data-lensprice')) || 0;
+                    const pkg = Math.round((framePrice + lensP) * (1 - BUNDLE_PERCENT / 100));
+                    hint.querySelector('span[data-pkgprice]').textContent =
+                        ' → harga paket Rp ' + pkg.toLocaleString('id-ID');
+                }
+            }
+        });
+    }
+
+    // Auto-pilih lensa paket saat frame ber-paket dipilih (kasir tidak perlu klik lagi)
+    function autoSelectBundleLens() {
+        const frame = document.querySelector('input[name="product_id"]:checked');
+        const bundleId = frame ? (frame.getAttribute('data-bundle') || '') : '';
+        if (bundleId) {
+            const lensRadio = document.querySelector(`input[name="lens_type_id"][value="${bundleId}"]`);
+            if (lensRadio && !lensRadio.checked && BUNDLE_PERCENT > 0 && currentMode === 'catalog') {
+                const prevCustom = document.getElementById('customLensPrice');
+                if (prevCustom) prevCustom.value = '';
+                lensRadio.checked = true;
+                lensRadio.dispatchEvent(new Event('change'));
+                showToast('Lensa paket dipilih otomatis: diskon ' + BUNDLE_PERCENT + '%', 'success');
+            }
+        }
+    }
+    frameRadios.forEach(r => r.addEventListener('change', () => { autoSelectBundleLens(); updateBundleLensHint(); calculateBilling(); }));
     customFrameName.addEventListener('input', calculateBilling);
     customFrameModel.addEventListener('input', calculateBilling);
     customFramePrice.addEventListener('input', calculateBilling);
@@ -894,7 +969,7 @@
         }
         isReevaluatingVoucher = false;
 
-        currentGrandTotal = Math.max(0, subtotal - currentDiscount);
+        currentGrandTotal = Math.max(0, subtotal - currentDiscount - currentBundleDiscount);
         billGrandTotal.textContent = formatRupiah(currentGrandTotal);
         const _bar = document.getElementById('billGrandTotalBar'); if (_bar) _bar.textContent = formatRupiah(currentGrandTotal);
         updateDpCalculation();
@@ -1036,6 +1111,8 @@
 
 
     // Inisialisasi
+    autoSelectBundleLens();
+    updateBundleLensHint();
     calculateBilling();
     amountPaidInput.value = currentGrandTotal;
     updateChange();

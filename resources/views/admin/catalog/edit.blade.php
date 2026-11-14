@@ -45,6 +45,16 @@
                 <input type="text" name="brand" value="{{ old('brand', $product->brand) }}" required class="w-full px-4 py-2.5 bg-sand-50 border border-sand-300 rounded-xl font-medium text-slate-800">
             </div>
             <div>
+                <label class="font-bold text-slate-700 block mb-1">Lensa Paket Bundling</label>
+                <select name="bundle_lens_type_id" class="w-full px-4 py-2.5 bg-sand-50 border border-sand-300 rounded-xl font-medium text-slate-800">
+                    <option value="">— Tanpa paket (jual terpisah)</option>
+                    @foreach($lensTypes as $lens)
+                        <option value="{{ $lens->id }}" {{ (string) old('bundle_lens_type_id', $product->bundle_lens_type_id) === (string) $lens->id ? 'selected' : '' }}> {{ $lens->name }} (+Rp {{ number_format($lens->additional_price, 0, ',', '.') }})</option>
+                    @endforeach
+                </select>
+                <span class="text-[10px] text-slate-400 mt-0.5 block">Jika dipilih, kasir bisa jual 1 set frame+lensa ini dengan harga paket (diskon otomatis % dari Pengaturan).</span>
+            </div>
+            <div>
                 <label class="font-bold text-slate-700 block mb-1">Kode Barcode Tag</label>
                 <input type="text" name="barcode" value="{{ old('barcode', $product->barcode) }}" placeholder="Kosong = otomatis AG-xxxxx" class="w-full px-4 py-2.5 bg-sand-50 border border-sand-300 rounded-xl font-mono uppercase text-slate-800">
                 <span class="text-[10px] text-slate-400 mt-0.5 block">Scan dengan barcode scanner USB / HP di kasir.</span>

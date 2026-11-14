@@ -96,6 +96,7 @@
                     <option value="Belanja Frame (Kulakan)" {{ $category === 'Belanja Frame (Kulakan)' ? 'selected' : '' }}>Belanja Frame</option>
                     <option value="Belanja Lensa Optik" {{ $category === 'Belanja Lensa Optik' ? 'selected' : '' }}>Belanja Lensa</option>
                     <option value="Peralatan & Sparepart Lab" {{ $category === 'Peralatan & Sparepart Lab' ? 'selected' : '' }}>Sparepart Lab</option>
+                    <option value="Belanja Modal" {{ $category === 'Belanja Modal' ? 'selected' : '' }}>Belanja Modal (Capex)</option>
                     <option value="Operasional & Listrik Toko" {{ $category === 'Operasional & Listrik Toko' ? 'selected' : '' }}>Operasional & Listrik</option>
                     <option value="Gaji & Uang Makan Staf" {{ $category === 'Gaji & Uang Makan Staf' ? 'selected' : '' }}>Gaji & Staf</option>
                     <option value="Lainnya" {{ $category === 'Lainnya' ? 'selected' : '' }}>Lainnya</option>
@@ -109,6 +110,87 @@
         <div class="text-slate-500 text-[11px]">
             Menampilkan {{ $expenses->count() }} transaksi pengeluaran
         </div>
+    </div>
+
+    <!-- ANALISIS KETERKAITAN OMSET vs BELANJA MODAL -->
+    <div class="bg-white rounded-3xl border border-violet-200 shadow-sm overflow-hidden">
+        <div class="p-4 sm:p-5 border-b border-sand-200 bg-violet-50/60">
+            <h3 class="font-serif font-bold text-base text-slate-900 flex items-center gap-2">
+                <i class="fa-solid fa-scale-balanced text-violet-600"></i> Analisis Omset vs Belanja Modal (HPP)
+            </h3>
+            <p class="text-[11px] text-slate-500 mt-0.5">Omset Lunas – HPP modal = Laba Kotor. HPP awal diestimasi otomatis dari % Margin Laba Modal di Pengaturan; koreksi per struk di tabel bawah agar perhitungan akurat.</p>
+        </div>
+        <div class="p-4 sm:p-5 grid grid-cols-2 md:grid-cols-5 gap-3">
+            <div class="p-3 rounded-2xl bg-sand-50 border border-sand-200">
+                <span class="text-[10px] font-bold text-slate-400 uppercase block">Omset Lunas</span>
+                <span class="text-sm font-extrabold text-slate-900">Rp {{ number_format($omsetBruto, 0, ',', '.') }}</span>
+            </div>
+            <div class="p-3 rounded-2xl bg-sand-50 border border-sand-200">
+                <span class="text-[10px] font-bold text-slate-400 uppercase block">HPP Modal (Estimasi)</span>
+                <span class="text-sm font-extrabold text-rose-700">Rp {{ number_format($hppTransaksi, 0, ',', '.') }}</span>
+            </div>
+            <div class="p-3 rounded-2xl bg-emerald-50 border border-emerald-200">
+                <span class="text-[10px] font-bold text-emerald-600 uppercase block">Laba Kotor</span>
+                <span class="text-sm font-extrabold text-emerald-700">Rp {{ number_format($labaKotor, 0, ',', '.') }}</span>
+                <span class="text-[10px] text-emerald-600 font-bold">Margin {{ number_format($marginKotor, 1, ',', '.') }}%</span>
+            </div>
+            <div class="p-3 rounded-2xl bg-sky-50 border border-sky-200">
+                <span class="text-[10px] font-bold text-sky-600 uppercase block">Belanja Modal Periode Ini</span>
+                <span class="text-sm font-extrabold text-sky-700">Rp {{ number_format($capexPeriod, 0, ',', '.') }}</span>
+            </div>
+            <div class="p-3 rounded-2xl bg-amber-50 border border-amber-200">
+                <span class="text-[10px] font-bold text-amber-600 uppercase block">BEP Belanja Modal</span>
+                <span class="text-sm font-extrabold text-amber-700">{{ number_format($breakEvenPct, 1, ',', '.') }}% omset</span>
+                <span class="text-[10px] text-amber-600 font-bold">{{ $breakEvenPct <= 100 ? 'Ter-cover laba kotor toko' : 'Melebihi omset periode ini' }}</span>
+            </div>
+        </div>
+
+        <!-- Koreksi HPP per Struk (keterkaitan nyata omset <-> modal) -->
+        @if($modalTransaksi->count())
+        <div class="px-4 pb-4 sm:px-5 sm:pb-5">
+            <details class="rounded-2xl border border-sand-200 overflow-hidden">
+                <summary class="cursor-pointer px-4 py-3 bg-sand-50 text-xs font-bold text-slate-700 select-none">
+                    <i class="fa-solid fa-link mr-1 text-violet-600"></i>Koreksi HPP Modal per Struk ({{ $modalTransaksi->count() }} transaksi lunas — omset = modal + laba)
+                </summary>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs divide-y divide-sand-200">
+                        <thead class="bg-white text-slate-500 font-bold uppercase text-[10px]">
+                            <tr>
+                                <th class="px-4 py-2">Kode Struk</th>
+                                <th class="px-4 py-2">Pelanggan</th>
+                                <th class="px-4 py-2 text-right">Omset</th>
+                                <th class="px-4 py-2">HPP Modal (koreksi)</th>
+                                <th class="px-4 py-2 text-right">Laba</th>
+                                <th class="px-4 py-2"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($modalTransaksi as $mt)
+                            <tr class="hover:bg-sand-50/50">
+                                <td class="px-4 py-2 font-mono font-bold text-slate-800">{{ $mt->order_code }}
+                                    @if(isset($linkedExpenses[$mt->order_code]))
+                                        <span class="ml-1 px-1.5 py-0.5 rounded bg-sky-100 text-sky-700 text-[9px] font-extrabold">NOTA MODAL Rp {{ number_format($linkedExpenses[$mt->order_code], 0, ',', '.') }}</span>
+                                    @endif
+                                </td>
+                                <td class="px-4 py-2 text-slate-600">{{ $mt->customer_name }}</td>
+                                <td class="px-4 py-2 text-right font-mono font-bold text-emerald-700">Rp {{ number_format($mt->grand_total, 0, ',', '.') }}</td>
+                                <td class="px-4 py-2">
+                                    <form method="POST" action="{{ route('admin.expenses.modal.hpp', $mt->id) }}" class="flex items-center gap-1.5">
+                                        @csrf @method('PUT')
+                                        <input type="number" name="hpp_modal" min="0" step="500" value="{{ (int) ($mt->hpp_modal ?? 0) }}" class="w-28 px-2 py-1 bg-sand-50 border border-sand-300 rounded-lg font-mono text-xs">
+                                        <button type="submit" class="px-2 py-1 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-[10px] font-bold"><i class="fa-solid fa-check"></i></button>
+                                    </form>
+                                </td>
+                                <td class="px-4 py-2 text-right font-mono font-bold {{ ($mt->grand_total - ($mt->hpp_modal ?? 0)) >= 0 ? 'text-slate-800' : 'text-rose-600' }}">Rp {{ number_format($mt->grand_total - ($mt->hpp_modal ?? 0), 0, ',', '.') }}</td>
+                                <td class="px-4 py-2"></td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </details>
+        </div>
+        @endif
     </div>
 
     <!-- TABEL CATATAN PENGELUARAN KAS -->
@@ -221,6 +303,7 @@
                     <option value="Belanja Frame (Kulakan)">Belanja Frame Kacamata (Kulakan)</option>
                     <option value="Belanja Lensa Optik">Belanja Stok Lensa Optik</option>
                     <option value="Peralatan & Sparepart Lab">Peralatan / Sparepart Lab Optik & Edger</option>
+                    <option value="Belanja Modal">Belanja Modal: Mesin/Alat/Renovasi/Kendaraan (Capex)</option>
                     <option value="Operasional & Listrik Toko">Operasional, Listrik & Internet Toko</option>
                     <option value="Gaji & Uang Makan Staf">Gaji / Insentif / Konsumsi Staf</option>
                     <option value="Lainnya">Lain-lain / Biaya Tak Terduga</option>
@@ -245,6 +328,12 @@
                         <option value="Uang Pribadi Owner">Talangan Pribadi Owner</option>
                     </select>
                 </div>
+            </div>
+
+            <div>
+                <label class="font-bold text-slate-700 block mb-1">Tautkan ke Struk POS (Opsional)</label>
+                <input type="text" name="linked_order_code" placeholder="Contoh: POS-20261115-ABCDE" class="w-full px-3 py-2 bg-sand-50 border border-sand-300 rounded-xl font-mono text-slate-800 text-xs">
+                <span class="text-[10px] text-slate-400 mt-0.5 block">Untuk Belanja Modal: isi kode struk agar pengeluarannya tercatat sebagai HPP transaksi itu.</span>
             </div>
 
             <div>
