@@ -1,4 +1,4 @@
-const CACHE_NAME = 'alysa-optical-v1';
+const CACHE_NAME = 'alysa-glasses-v2';
 const urlsToCache = [
   '/',
   '/manifest.json',

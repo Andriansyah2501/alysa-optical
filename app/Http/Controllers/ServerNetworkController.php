@@ -58,7 +58,7 @@ class ServerNetworkController extends Controller
 
         // 4. Status Port & Microservices Lokal
         $internalEndpoints = [
-            ['name' => 'Alysa Optical (Web)', 'url' => 'http://127.0.0.1:8084'],
+            ['name' => 'Alysa Glasses (Web)', 'url' => 'http://127.0.0.1:8084'],
             ['name' => 'Portal Lab ITEBA', 'url' => 'http://127.0.0.1:8000'],
             ['name' => 'n8n Automation Engine', 'url' => 'http://127.0.0.1:5678/healthz'],
             ['name' => 'Obsidian Web Vault', 'url' => 'http://127.0.0.1:8083'],

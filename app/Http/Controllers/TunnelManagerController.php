@@ -13,7 +13,7 @@ class TunnelManagerController extends Controller
     protected $tunnelList = [
         [
             'id' => 'alysa',
-            'name' => 'Alysa Optical E-Commerce',
+            'name' => 'Alysa Glasses E-Commerce',
             'service' => 'cloudflared-alysa.service',
             'port' => '8084',
             'custom_domain' => 'https://alysa.andrian-syah.my.id',

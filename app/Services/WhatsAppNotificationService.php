@@ -40,7 +40,7 @@ class WhatsAppNotificationService
                 return false;
             }
 
-            $storeName = $settings['store_name'] ?? 'Alysa Optical';
+            $storeName = $settings['store_name'] ?? 'Alysa Glasses';
             $trackingUrl = url('/lacak-pesanan?code=' . $order->order_code);
             $receiptUrl = route('pos.receipt', $order->order_code);
 
@@ -158,7 +158,7 @@ class WhatsAppNotificationService
             if (!$isEnabled) return false;
 
             $provider = strtolower($settings['wa_gateway_provider'] ?? 'local');
-            $storeName = $settings['store_name'] ?? 'Alysa Optical';
+            $storeName = $settings['store_name'] ?? 'Alysa Glasses';
 
             $rawPhone = preg_replace('/[^0-9]/', '', $customer->phone);
             if (str_starts_with($rawPhone, '0')) {

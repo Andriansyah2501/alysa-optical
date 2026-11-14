@@ -99,7 +99,7 @@
     <meta name="theme-color" content="#BE6F54">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Alysa Optical">
+    <meta name="apple-mobile-web-app-title" content="Alysa Glasses">
     <link rel="apple-touch-icon" href="/icons/icon-192.png">
     
     <script>
@@ -140,7 +140,7 @@
                         <div>
                             <!-- Nama Brand Dikecilkan -->
                             <span class="font-serif text-xs sm:text-sm font-bold tracking-tight text-slate-900 block leading-tight">
-                                {{ $globalSettings['store_name'] ?? 'Alysa Optical' }}
+                                {{ $globalSettings['store_name'] ?? 'Alysa Glasses' }}
                             </span>
                             <span class="text-[7.5px] sm:text-[8px] uppercase tracking-wider text-brand-600 font-semibold block">
                                 {{ $globalSettings['store_tagline'] ?? 'Eyewear Studio Batam' }}
@@ -259,7 +259,7 @@
                         $cleanPhone = preg_replace('/[^0-9]/', '', $globalSettings['store_phone'] ?? '087888883318');
                         $waTarget = str_starts_with($cleanPhone, '0') ? '62' . substr($cleanPhone, 1) : $cleanPhone;
                     @endphp
-                    <a href="https://wa.me/{{ $waTarget }}?text=Halo%20Alysa%20Optical" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-lg text-[11px] font-bold border border-emerald-200 transition-colors">
+                    <a href="https://wa.me/{{ $waTarget }}?text=Halo%20Alysa%20Glasses" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-lg text-[11px] font-bold border border-emerald-200 transition-colors">
                         <i class="fa-brands fa-whatsapp text-emerald-600 text-xs"></i>
                         <span>WA</span>
                     </a>
@@ -289,7 +289,7 @@
                 $cleanPhoneMobile = preg_replace('/[^0-9]/', '', $globalSettings['store_phone'] ?? '087888883318');
                 $waMobile = str_starts_with($cleanPhoneMobile, '0') ? '62' . substr($cleanPhoneMobile, 1) : $cleanPhoneMobile;
             @endphp
-            <a href="https://wa.me/{{ $waMobile }}?text=Halo%20Alysa%20Optical,%20saya%20ingin%20tanya%20kacamata" target="_blank" class="whitespace-nowrap px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200">
+            <a href="https://wa.me/{{ $waMobile }}?text=Halo%20Alysa%20Glasses,%20saya%20ingin%20tanya%20kacamata" target="_blank" class="whitespace-nowrap px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200">
                 <i class="fa-brands fa-whatsapp mr-1 text-emerald-600"></i> WhatsApp
             </a>
         </div>
@@ -438,7 +438,7 @@
                 <span>Admin</span>
             </a>
         @else
-            <a href="https://wa.me/{{ $waMobile }}?text=Halo%20Alysa%20Optical" target="_blank" class="flex flex-col items-center gap-1 text-[10px] font-bold text-emerald-600">
+            <a href="https://wa.me/{{ $waMobile }}?text=Halo%20Alysa%20Glasses" target="_blank" class="flex flex-col items-center gap-1 text-[10px] font-bold text-emerald-600">
                 <i class="fa-brands fa-whatsapp text-base"></i>
                 <span>Chat WA</span>
             </a>

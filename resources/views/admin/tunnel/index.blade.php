@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Manajemen Tunneling Cloudflare - Alysa Optical')
+@section('title', 'Manajemen Tunneling Cloudflare - Alysa Glasses')
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
@@ -49,7 +49,7 @@
             Prosedur Pemulihan Saat Akses Web Bermasalah / Terputus
         </div>
         <p class="text-amber-800/90 leading-relaxed">
-            Jika domain utama <span class="font-mono font-bold">alysa.andrian-syah.my.id</span> tidak dapat diakses dari luar, tekan tombol <strong>"Restart Tunnel"</strong> pada baris Alysa Optical di bawah. Sistem akan secara otomatis menginisiasi ulang tunneling Cloudflare Quick Tunnel dan menyediakan URL darurat <span class="font-mono text-xs">*.trycloudflare.com</span>. Anda juga dapat menggunakan akses langsung LAN pada IP <strong>http://192.168.0.30:8084</strong>.
+            Jika domain utama <span class="font-mono font-bold">alysa.andrian-syah.my.id</span> tidak dapat diakses dari luar, tekan tombol <strong>"Restart Tunnel"</strong> pada baris Alysa Glasses di bawah. Sistem akan secara otomatis menginisiasi ulang tunneling Cloudflare Quick Tunnel dan menyediakan URL darurat <span class="font-mono text-xs">*.trycloudflare.com</span>. Anda juga dapat menggunakan akses langsung LAN pada IP <strong>http://192.168.0.30:8084</strong>.
         </p>
     </div>
 

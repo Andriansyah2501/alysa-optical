@@ -359,7 +359,7 @@ class ReportController extends Controller
     }
 
     /**
-     * API Ringkasan Seluruh Laporan Alysa Optical untuk Otomasi n8n & Owner
+     * API Ringkasan Seluruh Laporan Alysa Glasses untuk Otomasi n8n & Owner
      */
     public function apiSummary(Request $request)
     {
