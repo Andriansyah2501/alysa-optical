@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\PrescriptionCard;
 use App\Models\Order;
 use App\Models\StoreSetting;
+use App\Services\PrescriptionWaService;
+use chillerlan\QRCode\QRCode;
+use chillerlan\QRCode\QROptions;
+use chillerlan\QRCode\Output\QROutputInterface;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -31,7 +35,8 @@ class PrescriptionCardController extends Controller
         $thisMonth = PrescriptionCard::whereMonth('exam_date', now()->month)
             ->whereYear('exam_date', now()->year)->count();
 
-        return view('admin.prescriptions.index', compact('cards', 'q', 'totalCards', 'thisMonth'));
+        $settings = StoreSetting::all()->pluck('value', 'key');
+        return view('admin.prescriptions.index', compact('cards', 'q', 'totalCards', 'thisMonth', 'settings'));
     }
 
     /** AR-2. Form Buat Kartu (prefill dari struk POS: ?order=POS-XXXX) */
@@ -59,8 +64,16 @@ class PrescriptionCardController extends Controller
         $data['user_id'] = Auth::id();
         $card = PrescriptionCard::create($data);
 
+        // AUTO-KIRIM WA via n8n bila diaktifkan di Pengaturan
+        $waNote = '';
+        if ((string) (StoreSetting::get('rx_wa_auto', '1') ?? '1') === '1' && $card->customer_phone) {
+            $res = PrescriptionWaService::send($card);
+            $card->update(['wa_sent_at' => now(), 'wa_status' => $res['ok'] ? 'Terkirim (' . $res['via'] . ')' : 'Gagal: ' . $res['error']]);
+            $waNote = $res['ok'] ? ' Kartu otomatis dikirim ke WA pasien via ' . strtoupper($res['via']) . '.' : ' Catatan: kirim WA gagal (' . $res['error'] . ').';
+        }
+
         return redirect()->route('admin.prescriptions.show', $card->id)
-            ->with('success', 'Kartu resep ' . $card->card_code . ' untuk ' . $card->customer_name . ' berhasil dibuat.');
+            ->with('success', 'Kartu resep ' . $card->card_code . ' untuk ' . $card->customer_name . ' berhasil dibuat.' . $waNote);
     }
 
     /** AR-4. Detail Kartu */
@@ -117,6 +130,84 @@ class PrescriptionCardController extends Controller
         $pdf = Pdf::loadView('admin.prescriptions.pdf', compact('card', 'settings'))
             ->setPaper('a5', 'portrait');
         return $pdf->stream('Kartu_Resep_' . $card->card_code . '_' . preg_replace('/\W+/', '_', $card->customer_name) . '.pdf');
+    }
+
+    /** AR-10. Kirim / ulang kartu ke WA pasien (tombol manual). */
+    public function sendWa($id)
+    {
+        $card = PrescriptionCard::findOrFail($id);
+        if (!$card->customer_phone) {
+            return back()->with('error', 'Nomor WhatsApp pasien belum diisi di kartu ini.');
+        }
+        $res = PrescriptionWaService::send($card);
+        $card->update(['wa_sent_at' => now(), 'wa_status' => $res['ok'] ? 'Terkirim (' . $res['via'] . ')' : 'Gagal: ' . $res['error']]);
+
+        return $res['ok']
+            ? back()->with('success', 'Kartu resep dikirim ke WA ' . $card->customer_name . ' via ' . strtoupper($res['via']) . ' ✅')
+            : back()->with('error', 'Gagal kirim WA: ' . $res['error']);
+    }
+
+    /** AR-11. Halaman share PUBLIK utk pasien (token acak, tanpa login). */
+    public function share($token)
+    {
+        $card = PrescriptionCard::where('share_token', $token)->firstOrFail();
+        $settings = StoreSetting::all()->pluck('value', 'key');
+        // QR -> link PDF (praktis discan & langsung bisa dicetak)
+        $options = new QROptions(['outputType' => QROutputInterface::MARKUP_HTML, 'eccLevel' => QRCode::ECC_L]);
+        $qr = (new QRCode($options))->render($card->shareUrl());
+
+        return view('admin.prescriptions.share', compact('card', 'settings', 'qr'));
+    }
+
+    /** AR-12. PDF utk pasien (via token publik). */
+    public function sharePdf($token)
+    {
+        $card = PrescriptionCard::where('share_token', $token)->firstOrFail();
+        $settings = StoreSetting::all()->pluck('value', 'key');
+        $pdf = Pdf::loadView('admin.prescriptions.pdf', compact('card', 'settings'))
+            ->setPaper('a5', 'portrait');
+        return $pdf->stream('Kartu_Resep_' . $card->card_code . '.pdf');
+    }
+
+    /** AR-13. Status gateway WA + QR pairing (live proxy WAHA) utk halaman Kartu Resep. */
+    public function waStatus()
+    {
+        $st = 'UNKNOWN';
+        $payload = ['status' => 'UNKNOWN'];
+        try {
+            $r = \Illuminate\Support\Facades\Http::withHeaders(['X-Api-Key' => 'alysa2026'])
+                ->timeout(5)->get('http://127.0.0.1:3008/api/sessions/default');
+            if ($r->successful()) {
+                $st = strtoupper($r->json('status') ?? 'UNKNOWN');
+                $payload['status'] = $st;
+                if ($st === 'ACTIVE') $payload['pushName'] = $r->json('me.pushName');
+            } else {
+                $payload['status'] = $st = 'OFFLINE';
+            }
+        } catch (\Throwable $e) { $payload['status'] = $st = 'OFFLINE'; }
+        if ($st === 'SCAN_QR_CODE') {
+            try {
+                $qr = \Illuminate\Support\Facades\Http::withHeaders(['X-Api-Key' => 'alysa2026'])
+                    ->timeout(5)->get('http://127.0.0.1:3008/api/default/auth/qr');
+                if ($qr->successful()) {
+                    $payload['qr_base64'] = 'data:image/png;base64,' . base64_encode($qr->body());
+                }
+            } catch (\Throwable $e) { /* qr kosong */ }
+        }
+        return response()->json($payload);
+    }
+
+    /** AR-14. Toggle kirim otomatis WA saat kartu dibuat. */
+    public function waToggle(Request $request)
+    {
+        $on = $request->boolean('enabled') ? '1' : '0';
+        \App\Models\StoreSetting::updateOrCreate(
+            ['key' => 'rx_wa_auto'],
+            ['value' => $on, 'label' => 'Auto-Kirim Kartu Resep via WA (n8n)', 'type' => 'boolean']
+        );
+        return back()->with('success', $on === '1'
+            ? 'Kirim otomatis WA via n8n AKTIF — setiap kartu baru langsung terkirim ke pasien.'
+            : 'Kirim otomatis WA DINONAKTIFKAN. Kirim tetap bisa manual lewat tombol Kirim WA.');
     }
 
     private function validated(Request $request): array

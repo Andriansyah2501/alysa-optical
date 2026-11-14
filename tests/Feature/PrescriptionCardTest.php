@@ -12,6 +12,7 @@ class PrescriptionCardTest extends TestCase
 {
     public function test_full_card_lifecycle_print_pdf(): void
     {
+        \App\Models\StoreSetting::updateOrCreate(['key' => 'rx_wa_auto'], ['value' => '0']);
         $u = User::where('role', 'optician')->first() ?? User::where('role', 'super_admin')->first();
         $this->actingAs($u)->get('/admin/kartu-resep')->assertOk()->assertSee('Kartu Resep Kacamata');
 
@@ -60,6 +61,21 @@ class PrescriptionCardTest extends TestCase
 
         // search
         $this->actingAs($u)->get('/admin/kartu-resep?q=Sari')->assertOk()->assertSee('Sari Dewi');
+
+        // public share page + QR (tanpa login)
+        $share = $this->get('/r/' . $card->shareUrlHash());
+        $share->assertOk()->assertSee('Kartu Resep Digital')->assertSee('Sari Dewi');
+        $share->assertSee('qr-box'); // QR ter-render di dalam kotaknya
+
+        // share PDF publik
+        $spdf = $this->get('/r/' . $card->shareUrlHash() . '/pdf');
+        $spdf->assertOk();
+
+        // token asing -> 404
+        $this->get('/r/tokenpalsu123')->assertNotFound();
+
+        // tombol kirim WA muncul di halaman detail
+        $this->actingAs($u)->get('/admin/kartu-resep/' . $card->id)->assertSee('Kirim Kartu Resep ke WhatsApp');
 
         // cleanup test record
         $card->delete();

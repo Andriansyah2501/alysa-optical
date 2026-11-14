@@ -32,6 +32,9 @@ Route::get('/pos/struk/{orderCode}', [PosController::class, 'receipt'])->name('p
     Route::get('/pos/thermer-data/{orderCode}', [PosController::class, 'getThermerJson'])->name('pos.thermer.json');
 
 Route::get('/lacak-pesanan', [GlassesShopController::class, 'track'])->name('shop.track');
+// Kartu Resep digital utk pasien (publik, akses token)
+Route::get('/r/{token}', [\App\Http\Controllers\PrescriptionCardController::class, 'share'])->name('rx.share');
+Route::get('/r/{token}/pdf', [\App\Http\Controllers\PrescriptionCardController::class, 'sharePdf'])->name('rx.share.pdf');
 Route::get('/kalender-promo', [PromoCalendarController::class, 'publicIndex'])->name('shop.calendar');
 
 // Rute Kasir POS (Akses: Cashier & Admin)
@@ -89,12 +92,15 @@ Route::middleware(['auth', 'role:admin,optician'])->prefix('admin')->group(funct
     Route::get('/kartu-resep', [\App\Http\Controllers\PrescriptionCardController::class, 'index'])->name('admin.prescriptions.index');
     Route::get('/kartu-resep/buat', [\App\Http\Controllers\PrescriptionCardController::class, 'create'])->name('admin.prescriptions.create');
     Route::post('/kartu-resep', [\App\Http\Controllers\PrescriptionCardController::class, 'store'])->name('admin.prescriptions.store');
+    Route::get('/kartu-resep/wa/status', [\App\Http\Controllers\PrescriptionCardController::class, 'waStatus'])->name('admin.prescriptions.wa.status');
     Route::get('/kartu-resep/{id}', [\App\Http\Controllers\PrescriptionCardController::class, 'show'])->name('admin.prescriptions.show');
     Route::get('/kartu-resep/{id}/edit', [\App\Http\Controllers\PrescriptionCardController::class, 'edit'])->name('admin.prescriptions.edit');
     Route::put('/kartu-resep/{id}', [\App\Http\Controllers\PrescriptionCardController::class, 'update'])->name('admin.prescriptions.update');
     Route::delete('/kartu-resep/{id}', [\App\Http\Controllers\PrescriptionCardController::class, 'destroy'])->name('admin.prescriptions.destroy');
     Route::get('/kartu-resep/{id}/cetak', [\App\Http\Controllers\PrescriptionCardController::class, 'print'])->name('admin.prescriptions.print');
     Route::get('/kartu-resep/{id}/pdf', [\App\Http\Controllers\PrescriptionCardController::class, 'pdf'])->name('admin.prescriptions.pdf');
+    Route::post('/kartu-resep/{id}/kirim-wa', [\App\Http\Controllers\PrescriptionCardController::class, 'sendWa'])->name('admin.prescriptions.send-wa');
+    Route::post('/kartu-resep/wa/toggle', [\App\Http\Controllers\PrescriptionCardController::class, 'waToggle'])->name('admin.prescriptions.wa.toggle');
 
     Route::get('/pengeluaran', [ExpenseController::class, 'index'])->name('admin.expenses.index');
     Route::post('/pengeluaran', [ExpenseController::class, 'store'])->name('admin.expenses.store');

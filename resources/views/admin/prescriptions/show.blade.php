@@ -24,6 +24,32 @@
         </div>
     </div>
 
+    <!-- KIRIM WA + LINK SHARE -->
+    <div class="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-3xl p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+        <div class="flex items-center gap-3 flex-1 min-w-0">
+            <div class="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center text-lg shrink-0"><i class="fa-brands fa-whatsapp"></i></div>
+            <div class="min-w-0">
+                <div class="text-xs font-extrabold text-slate-900">Kirim Kartu Resep ke WhatsApp pasien
+                    @if($card->wa_sent_at)
+                        <span class="ml-1 px-1.5 py-0.5 rounded-full text-[9px] font-extrabold {{ str_starts_with((string)$card->wa_status,'Terkirim') ? 'bg-emerald-200 text-emerald-800' : 'bg-rose-200 text-rose-800' }}">{{ $card->wa_status }} • {{ $card->wa_sent_at->format('d/m H:i') }}</span>
+                    @else
+                        <span class="ml-1 px-1.5 py-0.5 rounded-full text-[9px] font-extrabold bg-slate-200 text-slate-600">Belum dikirim</span>
+                    @endif
+                </div>
+                <div class="text-[10px] text-slate-500 truncate">{{ $card->customer_name }} — {{ $card->customer_phone ?: '(nomor WA belum diisi)' }}</div>
+            </div>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+            <form method="POST" action="{{ route('admin.prescriptions.send-wa', $card->id) }}">
+                @csrf
+                <button class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[11px] font-extrabold shadow-sm" {{ $card->customer_phone ? '' : 'disabled style=opacity:.5' }}>
+                    <i class="fa-solid fa-paper-plane mr-1"></i> {{ $card->wa_sent_at ? 'Kirim Ulang via n8n' : 'Kirim via n8n' }}
+                </button>
+            </form>
+            <a href="{{ $card->shareUrl() }}" target="_blank" class="px-3 py-2 bg-white border border-emerald-300 hover:bg-emerald-100 text-emerald-800 rounded-xl text-[11px] font-bold" title="Link kartu digital (untuk QR/beranda)"><i class="fa-solid fa-up-right-from-square mr-1"></i>Link Digital</a>
+        </div>
+    </div>
+
     <!-- PRATINJAU KARTU -->
     <div class="bg-white rounded-3xl border border-sand-200 shadow-sm overflow-hidden">
         <div class="p-4 bg-gradient-to-r from-brand-50 to-emerald-50 border-b border-sand-200 flex items-center justify-between">
