@@ -30,6 +30,9 @@
         tailwind.config = {
             theme: {
                 extend: {
+                    screens: {
+                        wide: { raw: '(orientation: landscape) and (min-width: 720px)' },
+                    },
                     fontFamily: {
                         sans: ['"Plus Jakarta Sans"', 'sans-serif'],
                         serif: ['"Playfair Display"', 'serif'],

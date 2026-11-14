@@ -10,7 +10,7 @@
         #posForm .pos-tiny-keep { font-size: 11px !important; }
     }
 </style>
-<div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-8 pb-28 lg:pb-8">
+<div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-8 pb-28 wide:pb-8 lg:pb-8">
     
     <!-- Header Kasir -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 sm:pb-6 border-b border-sand-200">
@@ -58,10 +58,10 @@
         @csrf
         <input type="hidden" name="voucher_code" id="posInputVoucher" value="">
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-8 items-start">
+        <div class="grid grid-cols-1 wide:grid-cols-12 lg:grid-cols-12 gap-4 sm:gap-6 wide:gap-5 lg:gap-8 items-start">
             
             <!-- Left Side: Pelanggan, Pilihan Transaksi & Resep (7 Kolom) -->
-            <div class="lg:col-span-7 space-y-6">
+            <div class="wide:col-span-7 lg:col-span-7 space-y-4 wide:space-y-5 lg:space-y-6">
                 
                 <!-- 1. Identitas Pelanggan Toko -->
                 <div id="posStepPelanggan" class="bg-white p-4 sm:p-6 rounded-3xl border border-sand-200 shadow-sm space-y-4 scroll-mt-36">
@@ -191,7 +191,7 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[45vh] lg:max-h-64 overflow-y-auto pr-1 overscroll-contain" id="frameContainer">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 wide:grid-cols-1 xl:grid-cols-2 gap-3 max-h-[45vh] wide:max-h-[42vh] lg:max-h-64 overflow-y-auto pr-1 overscroll-contain" id="frameContainer">
                             @foreach($products as $index => $prod)
                                 <label class="frame-item p-3 rounded-2xl border border-sand-200 hover:border-brand-400 flex items-center gap-3 cursor-pointer transition-all hover:bg-sand-50 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50/70 has-[:checked]:ring-1 has-[:checked]:ring-brand-500"
                                     data-search="{{ strtolower(trim(($prod->barcode ?? '') . ' ' . $prod->name . ' ' . $prod->brand . ' ' . $prod->frame_shape)) }}">
@@ -391,7 +391,7 @@
             </div>
 
             <!-- Right Side: Billing Kasir & Voucher & Cetak Struk (5 Kolom) -->
-            <div class="lg:col-span-5 space-y-6 lg:sticky lg:top-28">
+            <div class="wide:col-span-5 lg:col-span-5 space-y-4 wide:space-y-5 lg:space-y-6 wide:sticky lg:sticky wide:top-24 lg:top-28 max-h-[calc(100dvh-7rem)] wide:overflow-y-auto overscroll-contain wide:pr-1">
                 
                 <div id="posStepBilling" class="bg-white p-4 sm:p-6 rounded-3xl border border-sand-200 shadow-xl space-y-6 scroll-mt-36">
                     <div class="flex items-center justify-between pb-4 border-b border-sand-200">
@@ -546,7 +546,7 @@
                     </button>
 
                     <!-- Bar Bayar Sticky (HP / Tablet) -->
-                    <div id="posStickyPay" class="fixed bottom-14 sm:bottom-0 left-0 right-0 z-40 lg:hidden px-3 pb-3 pt-2.5 bg-white/95 backdrop-blur-md border-t border-sand-200 shadow-[0_-8px_24px_rgba(15,23,42,0.10)] rounded-t-2xl">
+                    <div id="posStickyPay" class="fixed bottom-14 sm:bottom-0 left-0 right-0 z-40 wide:hidden lg:hidden px-3 pb-3 pt-2.5 bg-white/95 backdrop-blur-md border-t border-sand-200 shadow-[0_-8px_24px_rgba(15,23,42,0.10)] rounded-t-2xl">
                         <div class="flex items-center justify-between gap-3 max-w-3xl mx-auto">
                             <div class="min-w-0">
                                 <span class="text-[9px] font-bold text-slate-400 uppercase block leading-none mb-0.5">Total Tagihan</span>
