@@ -170,7 +170,8 @@ class PosController extends Controller
         $dpAmount = 0;
         $remainingBalance = 0;
         $paymentStatus = 'Lunas';
-        $orderStatus = 'Selesai / Dibayar di Kasir';
+        // Status pengerjaan selalu mulai di TAHAP 1 — owner/admin yang update lewat dashboard.
+        $orderStatus = 'Order Diterima / Menunggu Antrean';
 
         $amountPaid = floatval($validated['amount_paid']);
 
@@ -183,11 +184,8 @@ class PosController extends Controller
 
             if ($remainingBalance > 0) {
                 $paymentStatus = 'DP (Uang Muka Terbayar)';
-                $orderStatus = 'Proses Potong Lensa (Lab Optik)';
-            } else {
-                $paymentStatus = 'Lunas';
-                $orderStatus = 'Selesai / Dibayar di Kasir';
             }
+            $orderStatus = 'Order Diterima / Menunggu Antrean';
             $change = max(0, $amountPaid - $dpAmount);
         } else {
             // Full Payment

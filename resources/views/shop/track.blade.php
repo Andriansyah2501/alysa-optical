@@ -48,14 +48,6 @@
                     $step = 1;
                 }
 
-                // OVERRIDE: transaksi POS kasir dibayar LUNAS full = barang langsung diterima
-                // -> selalu tampil SELESAI (step 5) walau string statusnya belum sinkron/cache.
-                $isPosFullLunas = str_starts_with($order->order_code, 'POS-')
-                    && strtoupper($order->payment_status) === 'LUNAS'
-                    && $order->payment_type !== 'dp';
-                if ($isPosFullLunas && $step < 5) {
-                    $step = 5;
-                }
 
                 $badgeBg = 'bg-amber-100 text-amber-800 border-amber-300';
                 if ($step >= 5) {
