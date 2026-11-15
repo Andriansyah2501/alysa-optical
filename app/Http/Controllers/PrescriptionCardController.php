@@ -170,6 +170,9 @@ class PrescriptionCardController extends Controller
             'quietzoneSize' => 2,
         ]);
         $png = (new QRCode($options))->render($card->shareUrl());
+        if (str_starts_with($png, 'data:image/png;base64,')) {
+            $png = base64_decode(substr($png, strlen('data:image/png;base64,'))) ?: '';
+        }
         return response($png, 200, ['Content-Type' => 'image/png', 'Cache-Control' => 'public, max-age=86400']);
     }
 
