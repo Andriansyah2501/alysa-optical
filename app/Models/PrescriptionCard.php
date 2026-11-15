@@ -59,32 +59,18 @@ class PrescriptionCard extends Model
     public function qrPngDataUri(): string
     {
         try {
-            $options = new \chillerlan\QRCode\QROptions([
-                'outputType' => \chillerlan\QRCode\Output\QROutputInterface::GDIMAGE_PNG,
-                'eccLevel'   => \chillerlan\QRCode\QRCode::ECC_M,
-                'scale'      => 4,
-                'quietzoneSize' => 2,
-            ]);
+            $options = new \chillerlan\QRCode\QROptions(['outputType' => \chillerlan\QRCode\Output\QROutputInterface::GDIMAGE_PNG, 'eccLevel' => \chillerlan\QRCode\QRCode::ECC_M, 'scale' => 4, 'quietzoneSize' => 2]);
             return (new \chillerlan\QRCode\QRCode($options))->render($this->shareUrl());
-        } catch (\Throwable $e) {
-            return '';
-        }
+        } catch (\Throwable $e) { return ''; }
     }
 
-    /** Markup SVG QR ( utk halaman cetak HTML — tajam dicetak, tanpa GD ). */
     public function qrSvgMarkup(): string
     {
         try {
-            $options = new \chillerlan\QRCode\QROptions([
-                'outputType'    => \chillerlan\QRCode\Output\QROutputInterface::MARKUP_SVG,
-                'eccLevel'      => \chillerlan\QRCode\QRCode::ECC_M,
-                'scale'         => 4,
-                'quietzoneSize' => 2,
-            ]);
-            return (new \chillerlan\QRCode\QRCode($options))->render($this->shareUrl());
-        } catch (\Throwable $e) {
-            return '';
-        }
+            $options = new \chillerlan\QRCode\QROptions(['outputType' => \chillerlan\QRCode\Output\QROutputInterface::MARKUP_SVG, 'eccLevel' => \chillerlan\QRCode\QRCode::ECC_M, 'scale' => 4, 'quietzoneSize' => 2]);
+            $svg = (new \chillerlan\QRCode\QRCode($options))->render($this->shareUrl());
+            return str_starts_with($svg, 'data:image/svg+xml;base64,') ? (base64_decode(substr($svg, 26)) ?: '') : $svg;
+        } catch (\Throwable $e) { return ''; }
     }
 
     public static function generateCode(): string
