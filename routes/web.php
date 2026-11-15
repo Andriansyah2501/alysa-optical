@@ -34,6 +34,7 @@ Route::get('/pos/struk/{orderCode}', [PosController::class, 'receipt'])->name('p
 Route::get('/lacak-pesanan', [GlassesShopController::class, 'track'])->name('shop.track');
 // Kartu Resep digital utk pasien (publik, akses token)
 Route::get('/r/{token}', [\App\Http\Controllers\PrescriptionCardController::class, 'share'])->name('rx.share');
+Route::get('/r/{token}/qr.png', [\App\Http\Controllers\PrescriptionCardController::class, 'qrPng'])->name('rx.share.qr');
 Route::get('/r/{token}/pdf', [\App\Http\Controllers\PrescriptionCardController::class, 'sharePdf'])->name('rx.share.pdf');
 Route::get('/kalender-promo', [PromoCalendarController::class, 'publicIndex'])->name('shop.calendar');
 

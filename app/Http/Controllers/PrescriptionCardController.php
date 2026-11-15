@@ -159,6 +159,20 @@ class PrescriptionCardController extends Controller
         return view('admin.prescriptions.share', compact('card', 'settings', 'qr'));
     }
 
+    /** QR PNG publik utk dikirim sebagai gambar WhatsApp. */
+    public function qrPng($token)
+    {
+        $card = PrescriptionCard::where('share_token', $token)->firstOrFail();
+        $options = new QROptions([
+            'outputType' => QROutputInterface::GDIMAGE_PNG,
+            'eccLevel' => QRCode::ECC_M,
+            'scale' => 8,
+            'quietzoneSize' => 2,
+        ]);
+        $png = (new QRCode($options))->render($card->shareUrl());
+        return response($png, 200, ['Content-Type' => 'image/png', 'Cache-Control' => 'public, max-age=86400']);
+    }
+
     /** AR-12. PDF utk pasien (via token publik). */
     public function sharePdf($token)
     {

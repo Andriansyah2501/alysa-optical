@@ -25,6 +25,9 @@
     .hdr .right { margin-left: auto; text-align: right; }
     .hdr .rtype { font-size: 10px; font-weight: 800; color: #7c3aed; text-transform: uppercase; letter-spacing: 1px; }
     .hdr .rcode { font-family: monospace; font-size: 10px; color: #334155; font-weight: 700; }
+    .hdr .qr { margin-top: 2mm; text-align: right; }
+    .hdr .qr svg { width: 16mm; height: 16mm; }
+    .hdr .qr .qrcap { font-size: 6.5px; color: #64748b; }
     .hdr .rdate { font-size: 9px; color: #475569; margin-top: .8mm; }
 
     .sec-title { font-size: 8.5px; font-weight: 800; color: #1e3a5f; text-transform: uppercase; letter-spacing: 1px; margin: 4mm 0 1.8mm; }
@@ -86,6 +89,9 @@
                 <div class="rtype">Kartu Resep Kacamata</div>
                 <div class="rcode">{{ $card->card_code }}</div>
                 <div class="rdate">{{ \Carbon\Carbon::parse($card->exam_date)->translatedFormat('d F Y') }}</div>
+                @if($card->qrSvgMarkup())
+                <div class="qr">{!! $card->qrSvgMarkup() !!}<div class="qrcap">scan: kartu digital</div></div>
+                @endif
             </div>
         </div>
 

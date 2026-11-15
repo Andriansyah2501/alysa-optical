@@ -48,11 +48,43 @@ class PrescriptionCard extends Model
         return url('/r/' . $this->ensureShareToken() . '/pdf');
     }
 
-    /** Nama file PDF seragam: Kartu_Resep_<kode>_<tgl periksa Y-m-d>.pdf */
+    /** Nama file PDF = nomor/ID resep, contoh: RX-20261115-37525.pdf */
     public function pdfFileName(): string
     {
-        $tgl = $this->exam_date ? \Carbon\Carbon::parse($this->exam_date)->format('Y-m-d') : date('Y-m-d');
-        return 'Kartu_Resep_' . $this->card_code . '_' . $tgl . '.pdf';
+        // Nama file = nomor/ID resep (RX-...)
+        return $this->card_code . '.pdf';
+    }
+
+    /** PNG data-URI QR menuju halaman kartu resep digital (aman utk dompdf). */
+    public function qrPngDataUri(): string
+    {
+        try {
+            $options = new \chillerlan\QRCode\QROptions([
+                'outputType' => \chillerlan\QRCode\Output\QROutputInterface::GDIMAGE_PNG,
+                'eccLevel'   => \chillerlan\QRCode\QRCode::ECC_M,
+                'scale'      => 4,
+                'quietzoneSize' => 2,
+            ]);
+            return (new \chillerlan\QRCode\QRCode($options))->render($this->shareUrl());
+        } catch (\Throwable $e) {
+            return '';
+        }
+    }
+
+    /** Markup SVG QR ( utk halaman cetak HTML — tajam dicetak, tanpa GD ). */
+    public function qrSvgMarkup(): string
+    {
+        try {
+            $options = new \chillerlan\QRCode\QROptions([
+                'outputType'    => \chillerlan\QRCode\Output\QROutputInterface::MARKUP_SVG,
+                'eccLevel'      => \chillerlan\QRCode\QRCode::ECC_M,
+                'scale'         => 4,
+                'quietzoneSize' => 2,
+            ]);
+            return (new \chillerlan\QRCode\QRCode($options))->render($this->shareUrl());
+        } catch (\Throwable $e) {
+            return '';
+        }
     }
 
     public static function generateCode(): string

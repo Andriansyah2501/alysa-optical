@@ -26,6 +26,7 @@ class PrescriptionWaService
 
         $shareUrl = $card->shareUrl();
         $pdfUrl = $card->sharePdfUrl();
+        $qrUrl = url('/r/' . $card->ensureShareToken() . '/qr.png');
         // URL unduhan lokal utk gateway (jauh lebih cepat & andal daripada tunnel publik)
         $downloadUrl = 'http://192.168.0.30:8084/r/' . $card->ensureShareToken() . '/pdf';
 
@@ -52,6 +53,7 @@ class PrescriptionWaService
             'pdf_url' => $pdfUrl,
             'download_url' => $downloadUrl,
             'pdf_file_name' => $card->pdfFileName(),
+            'qr_url' => $qrUrl,
             'exam_date' => (string) $card->exam_date,
             'timestamp' => now()->toIso8601String(),
         ];

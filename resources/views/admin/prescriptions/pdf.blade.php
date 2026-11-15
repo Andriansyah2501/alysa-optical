@@ -49,9 +49,19 @@
                 <div class="addr">{{ $settings['store_address'] ?? '' }} &nbsp;•&nbsp; Telp/WA: {{ $settings['store_phone'] ?? '' }}</div>
             </td>
             <td width="32%">
-                <div class="rtype">KARTU RESEP KACAMATA</div>
-                <div class="rcode">{{ $card->card_code }}</div>
-                <div class="rdate">{{ \Carbon\Carbon::parse($card->exam_date)->translatedFormat('d F Y') }}</div>
+                <table style="width:100%;border-collapse:collapse;"><tr>
+                <td style="vertical-align:top;">
+                    <div class="rtype">KARTU RESEP KACAMATA</div>
+                    <div class="rcode">{{ $card->card_code }}</div>
+                    <div class="rdate">{{ \Carbon\Carbon::parse($card->exam_date)->translatedFormat('d F Y') }}</div>
+                </td>
+                @if($card->qrPngDataUri())
+                <td style="width:62px;text-align:right;vertical-align:top;">
+                    <img src="{{ $card->qrPngDataUri() }}" style="width:58px;height:58px;">
+                    <div style="font-size:5.5pt;color:#64748b;text-align:center;margin-top:2px;">scan: kartu digital</div>
+                </td>
+                @endif
+                </tr></table>
             </td>
         </tr>
     </table>
