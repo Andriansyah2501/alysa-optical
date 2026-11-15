@@ -11,7 +11,7 @@ class Product extends Model
         'category_id', 'name', 'slug', 'barcode', 'brand', 'frame_shape',
         'frame_material', 'gender', 'price', 'discount_price',
         'stock', 'color_primary', 'color_hex', 'size_frame',
-        'description', 'image_url', 'bundle_lens_type_id', 'is_featured', 'is_bestseller'
+        'description', 'image_url', 'bundle_lens_type_id', 'bundle_includes_lens', 'is_featured', 'is_bestseller'
     ];
 
     /** Lensa yang dipaketkan untuk penjualan bundling (null = tidak ada). */
@@ -28,6 +28,10 @@ class Product extends Model
         }
         if ($percent === null) {
             $percent = max(0, min(90, (float) StoreSetting::get('bundle_discount_percent', '10')));
+        }
+        if ($this->bundle_includes_lens) {
+            // Harga frame sudah termasuk lensa ini (lensa = Rp0)
+            return 'SUDAH TERMASUK ' . $this->bundleLens->name;
         }
         if ($percent <= 0) {
             return null;

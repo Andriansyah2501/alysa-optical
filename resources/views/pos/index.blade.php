@@ -195,7 +195,7 @@
                             @foreach($products as $index => $prod)
                                 <label class="frame-item p-3 rounded-2xl border border-sand-200 hover:border-brand-400 flex items-center gap-3 cursor-pointer transition-all hover:bg-sand-50 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50/70 has-[:checked]:ring-1 has-[:checked]:ring-brand-500"
                                     data-search="{{ strtolower(trim(($prod->barcode ?? '') . ' ' . $prod->name . ' ' . $prod->brand . ' ' . $prod->frame_shape)) }}">
-                                    <input type="radio" name="product_id" value="{{ $prod->id }}" data-name="{{ $prod->name }}" data-barcode="{{ $prod->barcode }}" data-price="{{ $prod->effective_price }}" data-bundle="{{ $prod->bundle_lens_type_id }}" data-packagelabel="{{ $prod->bundleLabel($bundleDiscountPercent) }}" {{ $index === 0 ? 'checked' : '' }} class="text-brand-600 focus:ring-brand-500 shrink-0">
+                                    <input type="radio" name="product_id" value="{{ $prod->id }}" data-name="{{ $prod->name }}" data-barcode="{{ $prod->barcode }}" data-price="{{ $prod->effective_price }}" data-bundle="{{ $prod->bundle_lens_type_id }}" data-incl="{{ $prod->bundle_includes_lens ? 1 : 0 }}" data-packagelabel="{{ $prod->bundleLabel($bundleDiscountPercent) }}" {{ $index === 0 ? 'checked' : '' }} class="text-brand-600 focus:ring-brand-500 shrink-0">
                                     <img src="{{ $prod->image_url }}" alt="{{ $prod->name }}" class="w-12 h-12 rounded-xl object-cover bg-white border border-sand-200 shrink-0">
                                     <div class="flex-1 min-w-0">
                                         <h4 class="font-bold text-xs text-slate-900 truncate">{{ $prod->name }}</h4>
@@ -647,6 +647,7 @@
     let currentDiscount = 0;
     const BUNDLE_PERCENT = {{ (int) $bundleDiscountPercent }};
     let bundleActive = false;
+    let bundleIncl = false;
     let currentBundleDiscount = 0;
     const bundleAppliedInput = document.getElementById('bundleAppliedInput');
     let currentGrandTotal = 0;
@@ -751,10 +752,21 @@
         const checkedFrameB = document.querySelector('input[name="product_id"]:checked');
         const bundleLensId = (currentMode === 'catalog' && checkedFrameB) ? (checkedFrameB.getAttribute('data-bundle') || '') : '';
         const checkedLensB = document.querySelector('input[name="lens_type_id"]:checked');
-        bundleActive = !!(BUNDLE_PERCENT > 0 && bundleLensId && checkedLensB && checkedLensB.value === bundleLensId && currentLensPrice > 0
+        // Mode INCLUDE: harga frame sudah termasuk lensa paket -> lensa Rp0, tanpa diskon %
+        bundleIncl = !!(bundleLensId && checkedFrameB && checkedFrameB.getAttribute('data-incl') === '1'
+            && checkedLensB && checkedLensB.value === bundleLensId
+            && !(customLensPrice.value && parseFloat(customLensPrice.value) > 0)
+            && currentMode === 'catalog');
+        if (bundleIncl) {
+            currentLensPrice = 0;
+            bundleAppliedInput.value = '1';
+            billLensName.textContent = 'Termasuk harga frame (paket)';
+            billLensPrice.textContent = 'Rp 0';
+        }
+        bundleActive = !bundleIncl && !!(BUNDLE_PERCENT > 0 && bundleLensId && checkedLensB && checkedLensB.value === bundleLensId && currentLensPrice > 0
             && !(customLensPrice.value && parseFloat(customLensPrice.value) > 0));
         currentBundleDiscount = bundleActive ? Math.round((currentFramePrice + currentLensPrice) * BUNDLE_PERCENT / 100) : 0;
-        bundleAppliedInput.value = bundleActive ? '1' : '';
+        if (!bundleIncl) bundleAppliedInput.value = bundleActive ? '1' : '';
 
         // 3. Hitung Biaya Jasa / Servis
         if (serviceFeeToggle.checked || currentMode === 'service_only') {
@@ -916,12 +928,12 @@
         const bundleId = frame ? (frame.getAttribute('data-bundle') || '') : '';
         if (bundleId) {
             const lensRadio = document.querySelector(`input[name="lens_type_id"][value="${bundleId}"]`);
-            if (lensRadio && !lensRadio.checked && BUNDLE_PERCENT > 0 && currentMode === 'catalog') {
+            if (lensRadio && !lensRadio.checked && currentMode === 'catalog') {
                 const prevCustom = document.getElementById('customLensPrice');
                 if (prevCustom) prevCustom.value = '';
                 lensRadio.checked = true;
                 lensRadio.dispatchEvent(new Event('change'));
-                showToast('Lensa paket dipilih otomatis: diskon ' + BUNDLE_PERCENT + '%', 'success');
+                showToast((frame.getAttribute('data-incl')==='1') ? 'Lensa paket dipilih otomatis: sudah termasuk harga frame' : ('Lensa paket dipilih otomatis: diskon ' + BUNDLE_PERCENT + '%'), 'success');
             }
         }
     }

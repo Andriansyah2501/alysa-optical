@@ -52,7 +52,12 @@
                         <option value="{{ $lens->id }}" {{ (string) old('bundle_lens_type_id', $product->bundle_lens_type_id) === (string) $lens->id ? 'selected' : '' }}> {{ $lens->name }} (+Rp {{ number_format($lens->additional_price, 0, ',', '.') }})</option>
                     @endforeach
                 </select>
-                <span class="text-[10px] text-slate-400 mt-0.5 block">Jika dipilih, kasir bisa jual 1 set frame+lensa ini dengan harga paket (diskon otomatis % dari Pengaturan).</span>
+                <label class="mt-2 flex items-center gap-2 text-[11px] font-bold text-slate-600 cursor-pointer select-none">
+                    <input type="checkbox" name="bundle_includes_lens" value="1" {{ old('bundle_includes_lens', $product->bundle_includes_lens) ? 'checked' : '' }}
+                           class="rounded border-sand-300 text-violet-600 focus:ring-violet-500">
+                    <span>Harga frame <span class="text-violet-700">sudah termasuk lensa paket</span> ini (lensa ditagih Rp0)</span>
+                </label>
+                <span class="text-[10px] text-slate-400 mt-0.5 block">Centang = set harga di kolom Harga sebagai harga 1 set. Tanpa centang = diskon % otomatis.</span>
             </div>
             <div>
                 <label class="font-bold text-slate-700 block mb-1">Kode Barcode Tag</label>

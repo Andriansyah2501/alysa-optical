@@ -60,6 +60,7 @@ class ProductCatalogController extends Controller
             'image_url' => 'nullable|url',
             'barcode' => 'nullable|string|max:32|unique:products,barcode',
             'bundle_lens_type_id' => 'nullable|integer|exists:lens_types,id',
+            'bundle_includes_lens' => 'nullable|boolean',
             'is_bestseller' => 'nullable|boolean',
             'is_new' => 'nullable|boolean',
         ]);
@@ -70,6 +71,7 @@ class ProductCatalogController extends Controller
         $data['is_bestseller'] = $request->has('is_bestseller');
         $data['is_new'] = $request->has('is_new');
         $data['bundle_lens_type_id'] = !empty($data['bundle_lens_type_id']) ? (int) $data['bundle_lens_type_id'] : null;
+        $data['bundle_includes_lens'] = $data['bundle_lens_type_id'] ? (bool) ($request->input('bundle_includes_lens') === '1' || $data['bundle_includes_lens'] ?? false) : false;
         if (empty($data['barcode'])) {
             unset($data['barcode']); // biarkan model generate AG-##### otomatis
         } else {
@@ -107,11 +109,13 @@ class ProductCatalogController extends Controller
             'image_url' => 'nullable|url',
             'barcode' => 'nullable|string|max:32|unique:products,barcode,' . $product->id,
             'bundle_lens_type_id' => 'nullable|integer|exists:lens_types,id',
+            'bundle_includes_lens' => 'nullable|boolean',
         ]);
 
         $data['is_bestseller'] = $request->has('is_bestseller');
         $data['is_new'] = $request->has('is_new');
         $data['bundle_lens_type_id'] = !empty($data['bundle_lens_type_id']) ? (int) $data['bundle_lens_type_id'] : null;
+        $data['bundle_includes_lens'] = $data['bundle_lens_type_id'] ? (bool) ($request->input('bundle_includes_lens') === '1' || $data['bundle_includes_lens'] ?? false) : false;
         $data['barcode'] = !empty($data['barcode'])
             ? strtoupper(trim($data['barcode']))
             : sprintf('AG-%05d', $product->id);

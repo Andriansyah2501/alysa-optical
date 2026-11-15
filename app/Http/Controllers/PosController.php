@@ -129,12 +129,19 @@ class PosController extends Controller
 
         // 3.2. PAKET BUNDLING: Frame Katalog + Lensa yang dipaketkan -> potongan % otomatis
         $bundleDiscount = 0;
+        $lensIncluded = false;
         if ($request->filled('bundle_applied') && $mode === 'catalog' && $productModel) {
             $bundleLensId = (int) ($productModel->bundle_lens_type_id ?? 0);
             $chosenLensId = (int) ($validated['lens_type_id'] ?? 0);
-            if ($bundleLensId > 0 && $chosenLensId === $bundleLensId && $lensPrice > 0) {
-                $percent = max(0, min(90, (float) StoreSetting::get('bundle_discount_percent', '10')));
-                $bundleDiscount = round(($framePrice + $lensPrice) * $percent / 100);
+            if ($bundleLensId > 0 && $chosenLensId === $bundleLensId) {
+                if ($productModel->bundle_includes_lens) {
+                    // Harga frame sudah termasuk lensa paket -> lensa tidak ditagih
+                    $lensPrice = 0;
+                    $lensIncluded = true;
+                } elseif ($lensPrice > 0) {
+                    $percent = max(0, min(90, (float) StoreSetting::get('bundle_discount_percent', '10')));
+                    $bundleDiscount = round(($framePrice + $lensPrice) * $percent / 100);
+                }
             }
         }
 
